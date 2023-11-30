@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME}
   src/main.cpp
   src/Visualizer.cpp
   src/Logger.cpp
+  src/Input.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

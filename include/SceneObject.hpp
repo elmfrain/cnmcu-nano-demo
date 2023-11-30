@@ -62,6 +62,7 @@ namespace em
         Type getType() const;
         const std::string& getName() const;
         Transform& getTransform();
+        const Transform& getConstTransform() const;
         void setName(const std::string& name);
 
         void removeAllChildren();

@@ -95,6 +95,16 @@ const std::string& SceneObject::getName() const
     return m_name;
 }
 
+Transform& SceneObject::getTransform()
+{
+    return m_transform;
+}
+
+const Transform& SceneObject::getConstTransform() const
+{
+    return m_transform;
+}
+
 // Sets the name of the object. If the name is already taken, it will be
 // appended with a number.
 void SceneObject::setName(const std::string& name)

@@ -46,6 +46,9 @@ namespace em
         bool m_mouseScrolled;
 
         void update();
+        void registerCallbacks();
+        void clearAllBuffers();
+        void clearIntermittentBuffers();
 
         friend class VisualizerApp;
         static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);

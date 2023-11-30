@@ -6,6 +6,8 @@ add_subdirectory("dep/glfw")
 
 add_subdirectory("dep/glad")
 
+add_subdirectory("dep/glm")
+
 add_executable(${PROJECT_NAME}
   src/main.cpp
   src/Visualizer.cpp
@@ -16,11 +18,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   include
   dep/glfw/include
   dep/glad/include
+  dep/glm
 )
 
 target_link_libraries(${PROJECT_NAME}
   glfw
   glad
+  glm
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

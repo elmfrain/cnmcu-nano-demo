@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
   src/Logger.cpp
   src/Input.cpp
   src/SceneObject.cpp
+  src/Camera.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

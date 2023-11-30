@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef EMSCRIPTEN
 #include <glad/glad.h>
 #else

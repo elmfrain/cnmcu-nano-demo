@@ -20,6 +20,7 @@ bool VisualizerApp::start(AppParams& options)
         return false;
     }
 
+    // Setup Glfw window
     glfwWindowHint(GLFW_SAMPLES, options.msaaSamples);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -42,11 +43,15 @@ bool VisualizerApp::start(AppParams& options)
 
     glfwMakeContextCurrent(m_window);
 
+    // Initialize GLAD for OpenGL function loading
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         m_logger.fatalf("Unable to load OpenGL functions");
         return false;
     }
+
+    // Setup input
+    m_input = std::make_unique<Input>(m_window);
 
     m_initialized = true;
 
@@ -69,14 +74,15 @@ bool VisualizerApp::runLoop()
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    m_input->update();
     glfwSwapBuffers(m_window);
     glfwPollEvents();
     m_shouldClose = glfwWindowShouldClose(m_window);
 
-    if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE)
+    if(m_input->isKeyPressed(GLFW_KEY_ESCAPE))
         m_shouldClose = true;
 
-    if(glfwGetKey(m_window, GLFW_KEY_F11) == GLFW_RELEASE)
+    if(m_input->isKeyPressed(GLFW_KEY_F11))
         setFullscreen(!m_fullscreen);
 
     return true;
@@ -132,4 +138,9 @@ glm::ivec2 VisualizerApp::getWindowSize()
 AppParams VisualizerApp::getParams()
 {
     return m_params;
+}
+
+const Input& VisualizerApp::getInput()
+{
+    return *m_input;
 }

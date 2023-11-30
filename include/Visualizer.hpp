@@ -3,7 +3,10 @@
 #include <Logger.hpp>
 #include <GLInclude.hpp>
 #include <GLFWInclude.hpp>
+#include <Input.hpp>
 #include <glm/glm.hpp>
+
+#include <memory>
 #include <inttypes.h>
 
 namespace em {
@@ -33,10 +36,12 @@ namespace em {
         glm::ivec2 getWindowSize();
 
         AppParams getParams();
+        const Input& getInput();
     private:
         Logger m_logger;
         AppParams m_params;
         GLFWwindow* m_window;
+        std::unique_ptr<Input> m_input;
         bool m_fullscreen;
         bool m_shouldClose;
         bool m_initialized;

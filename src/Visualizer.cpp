@@ -10,9 +10,9 @@ VisualizerApp::VisualizerApp() :
 
 }
 
-bool VisualizerApp::start(AppOptions& options)
+bool VisualizerApp::start(AppParams& options)
 {
-    m_options = options;
+    m_params = options;
 
     if(!glfwInit())
     {
@@ -73,10 +73,10 @@ bool VisualizerApp::runLoop()
     glfwPollEvents();
     m_shouldClose = glfwWindowShouldClose(m_window);
 
-    if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if(glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_RELEASE)
         m_shouldClose = true;
 
-    if(glfwGetKey(m_window, GLFW_KEY_F11) == GLFW_PRESS)
+    if(glfwGetKey(m_window, GLFW_KEY_F11) == GLFW_RELEASE)
         setFullscreen(!m_fullscreen);
 
     return true;
@@ -110,7 +110,26 @@ void VisualizerApp::setFullscreen(bool fullscreen)
     }
     else
     {
-        glfwSetWindowMonitor(m_window, nullptr, 0, 0, m_options.width, m_options.height, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(m_window, nullptr, 0, 0, m_params.width, m_params.height, GLFW_DONT_CARE);
         m_fullscreen = false;
     }
+}
+
+glm::ivec2 VisualizerApp::getWindowSize()
+{
+    if(!m_initialized)
+    {
+        m_logger.errorf("Application has not been initialized");
+        return glm::ivec2(0, 0);
+    }
+
+    int width, height;
+    glfwGetWindowSize(m_window, &width, &height);
+
+    return glm::ivec2(width, height);
+}
+
+AppParams VisualizerApp::getParams()
+{
+    return m_params;
 }

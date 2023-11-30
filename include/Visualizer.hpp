@@ -3,10 +3,11 @@
 #include <Logger.hpp>
 #include <GLInclude.hpp>
 #include <GLFWInclude.hpp>
+#include <glm/glm.hpp>
 #include <inttypes.h>
 
 namespace em {
-    struct AppOptions
+    struct AppParams
     {
         uint8_t msaaSamples = 2;
         uint16_t width = 800;
@@ -23,17 +24,18 @@ namespace em {
     public:
         VisualizerApp();
 
-        bool start(AppOptions& settings);
+        bool start(AppParams& settings);
         bool shouldClose();
         bool runLoop();
         bool terminate();
 
         void setFullscreen(bool fullscreen);
+        glm::ivec2 getWindowSize();
 
-        AppOptions getOptions();
+        AppParams getParams();
     private:
         Logger m_logger;
-        AppOptions m_options;
+        AppParams m_params;
         GLFWwindow* m_window;
         bool m_fullscreen;
         bool m_shouldClose;

@@ -5,7 +5,7 @@ static em::Logger logger("Main");
 
 int main(int argc, char** argv)
 {
-    em::AppOptions options;
+    em::AppParams options;
 
     em::VisualizerApp application;
 

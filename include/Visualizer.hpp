@@ -37,6 +37,8 @@ namespace em {
 
         AppParams getParams();
         const Input& getInput();
+
+        static VisualizerApp& getInstance();
     private:
         Logger m_logger;
         AppParams m_params;

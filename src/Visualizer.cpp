@@ -2,12 +2,17 @@
 
 using namespace em;
 
+static VisualizerApp* instance = nullptr;
+
 VisualizerApp::VisualizerApp() :
     m_logger("VisualizerApp"),
     m_shouldClose(false),
     m_initialized(false)
 {
+    if(instance)
+        m_logger.warnf("Creating another instance when a VisualizerApp instance already exists");
 
+    instance = this;
 }
 
 bool VisualizerApp::start(AppParams& options)
@@ -143,4 +148,9 @@ AppParams VisualizerApp::getParams()
 const Input& VisualizerApp::getInput()
 {
     return *m_input;
+}
+
+VisualizerApp& VisualizerApp::getInstance()
+{
+    return *instance;
 }

@@ -4,6 +4,8 @@ project(sare-init-visulizer)
 
 add_subdirectory("dep/glfw")
 
+add_subdirectory("dep/glad")
+
 add_executable(${PROJECT_NAME}
   src/main.cpp
   src/Visualizer.cpp
@@ -13,10 +15,12 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE
   include
   dep/glfw/include
+  dep/glad/include
 )
 
 target_link_libraries(${PROJECT_NAME}
   glfw
+  glad
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

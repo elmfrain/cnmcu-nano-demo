@@ -2,12 +2,21 @@ cmake_minimum_required(VERSION 3.1)
 
 project(sare-init-visulizer)
 
+add_subdirectory("dep/glfw")
+
 add_executable(${PROJECT_NAME}
   src/main.cpp
+  src/Visualizer.cpp
+  src/Logger.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
   include
+  dep/glfw/include
+)
+
+target_link_libraries(${PROJECT_NAME}
+  glfw
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

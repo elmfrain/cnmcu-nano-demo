@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Logger.hpp>
+#include <GLInclude.hpp>
 #include <GLFWInclude.hpp>
 #include <inttypes.h>
 

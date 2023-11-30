@@ -42,11 +42,11 @@ bool VisualizerApp::start(AppOptions& options)
 
     glfwMakeContextCurrent(m_window);
 
-    // if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    // {
-        // logger.fatalf("Unable to load OpenGL functions");
-        // return false;
-    // }
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        m_logger.fatalf("Unable to load OpenGL functions");
+        return false;
+    }
 
     m_initialized = true;
 
@@ -65,6 +65,9 @@ bool VisualizerApp::runLoop()
         m_logger.errorf("Application has not been initialized");
         return false;
     }
+
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glfwSwapBuffers(m_window);
     glfwPollEvents();

@@ -35,7 +35,7 @@ namespace em
 
         glm::mat4 getMatrix() const;
         glm::mat4 getInverseMatrix() const;
-        glm::quat getRotation() const;
+        glm::quat getRotationQuaternion() const;
     };
 
     class SceneObject

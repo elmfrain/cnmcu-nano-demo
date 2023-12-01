@@ -19,7 +19,7 @@ glm::mat4 Transform::getMatrix() const
     const glm::vec3 flipZVec = glm::vec3(1.0f, 1.0f, -1.0f);
 
     glm::mat4 matrix = glm::translate(glm::mat4(1.0f), position * flipZVec);
-    matrix *= glm::mat4_cast(rotationQuaternion);
+    matrix *= glm::mat4_cast(getRotation());
     matrix = glm::translate(matrix, offset * flipZVec);
     matrix = glm::scale(matrix, scale);
     return matrix;
@@ -31,7 +31,7 @@ glm::mat4 Transform::getInverseMatrix() const
 
     glm::mat4 matrix = glm::scale(glm::mat4(1.0f), 1.0f / scale);
     matrix = glm::translate(matrix, -offset * flipZVec);
-    matrix = glm::inverse(glm::mat4_cast(rotationQuaternion)) * matrix;
+    matrix = glm::inverse(glm::mat4_cast(getRotation())) * matrix;
     matrix = glm::translate(matrix, -position * flipZVec);
     return matrix;
 }

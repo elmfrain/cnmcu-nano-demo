@@ -11,19 +11,19 @@ namespace em
     public:
         Input(GLFWwindow* window);
 
-        bool isKeyPressed(int key); // Initial press
-        bool isKeyReleased(int key); // Initial release
-        bool isKeyHeld(int key); // Pressed and held
-        bool isKeyRepeating(int key); // Held and repeating
+        bool isKeyPressed(int key) const; // Initial press
+        bool isKeyReleased(int key) const; // Initial release
+        bool isKeyHeld(int key) const; // Pressed and held
+        bool isKeyRepeating(int key) const; // Held and repeating
 
-        bool isMousePressed(int button); // Initial press
-        bool isMouseReleased(int button); // Initial release
-        bool isMouseHeld(int button); // Pressed and held
-        glm::vec2 getMousePosition(); // Get mouse position
-        glm::vec2 getMouseDelta(); // Get mouse delta
-        bool mouseMoved(); // Has the mouse just moved?
-        bool mouseScrolled(); // Has the mouse just scrolled?
-        glm::vec2 getMouseScroll(); // Get mouse scroll
+        bool isMousePressed(int button) const; // Initial press
+        bool isMouseReleased(int button) const; // Initial release
+        bool isMouseHeld(int button) const; // Pressed and held
+        glm::vec2 getMousePosition() const; // Get mouse position
+        glm::vec2 getMouseDelta() const; // Get mouse delta
+        bool mouseMoved() const; // Has the mouse just moved?
+        bool mouseScrolled() const; // Has the mouse just scrolled?
+        glm::vec2 getMouseScroll() const; // Get mouse scroll
     private:
         static const int INT_KEY_FLAGS_COUNT = 88;
         static const int INT_MOUSE_FLAGS_COUNT = 1;

@@ -27,62 +27,62 @@ Input::Input(GLFWwindow* window) :
     windowInputMap[window] = this;
 }
 
-bool Input::isKeyPressed(int key)
+bool Input::isKeyPressed(int key) const
 {
     return i_getNthBit(m_keyPressed, key);
 }
 
-bool Input::isKeyReleased(int key)
+bool Input::isKeyReleased(int key) const
 {
     return i_getNthBit(m_keyReleased, key);
 }
 
-bool Input::isKeyHeld(int key)
+bool Input::isKeyHeld(int key) const
 {
     return i_getNthBit(m_keyHeld, key);
 }
 
-bool Input::isKeyRepeating(int key)
+bool Input::isKeyRepeating(int key) const
 {
     return i_getNthBit(m_keyRepeating, key);
 }
 
-bool Input::isMousePressed(int button)
+bool Input::isMousePressed(int button) const
 {
     return i_getNthBit(m_mousePressed, button);
 }
 
-bool Input::isMouseReleased(int button)
+bool Input::isMouseReleased(int button) const
 {
     return i_getNthBit(m_mouseReleased, button);
 }
 
-bool Input::isMouseHeld(int button)
+bool Input::isMouseHeld(int button) const
 {
     return i_getNthBit(m_mouseHeld, button);
 }
 
-glm::vec2 Input::getMousePosition()
+glm::vec2 Input::getMousePosition() const
 {
     return m_mousePosition;
 }
 
-glm::vec2 Input::getMouseDelta()
+glm::vec2 Input::getMouseDelta() const
 {
     return m_mouseDelta;
 }
 
-bool Input::mouseMoved()
+bool Input::mouseMoved() const
 {
     return m_mouseMoved;
 }
 
-bool Input::mouseScrolled()
+bool Input::mouseScrolled() const
 {
     return m_mouseScrolled;
 }
 
-glm::vec2 Input::getMouseScroll()
+glm::vec2 Input::getMouseScroll() const
 {
     return m_mouseScroll;
 }

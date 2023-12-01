@@ -19,12 +19,14 @@ namespace em
         void setModelViewMatrix(const glm::mat4& modelViewMatrix);
         void setColor(const glm::vec4& color);
         void setEnabledTexture(int index); // -1 to disable textures
+        void setVertexColorEnabled(bool enabled);
 
         GLuint getProgram() const;
         const glm::mat4& getProjectionMatrix() const;
         const glm::mat4& getModelViewMatrix() const;
         const glm::vec4& getColor() const;
         int getEnabledTexture() const; // returns -1 if textures are disabled
+        bool isVertexColorEnabled() const;
 
         const char* getName() const;
     private:
@@ -36,6 +38,7 @@ namespace em
         GLuint m_texturesUniformLoc;
         GLuint m_textureCountUniformLoc;
         GLuint m_enabledTextureUniformLoc;
+        GLuint m_vertexColorEnabledUniformLoc;
 
         glm::mat4 m_projectionMatrix;
         glm::mat4 m_modelViewMatrix;
@@ -43,6 +46,7 @@ namespace em
         GLuint m_textures[32];
         GLuint m_textureCount;
         int m_enabledTexture;
+        bool m_vertexColorEnabled;
 
         bool m_hasWarnedAboutNotBeingInitialized;
         const char* m_name;

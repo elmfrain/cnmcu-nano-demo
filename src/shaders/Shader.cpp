@@ -9,11 +9,11 @@ const char* Shader::m_vertexShaderSource =
     "layout(location = 2) in vec4 inColor;\n"
     "out vec2 uv;\n"
     "out vec4 color;\n"
-    "uniform mat4 projectionMatrix;\n"
-    "uniform mat4 modelViewMatrix;\n"
+    "uniform mat4 u_projectionMatrix;\n"
+    "uniform mat4 u_modelViewMatrix;\n"
     "void main()\n"
     "{\n"
-    "    gl_Position = projectionMatrix * modelViewMatrix * vec4(inPos, 1);\n"
+    "    gl_Position = u_projectionMatrix * u_modelViewMatrix * vec4(inPos, 1);\n"
     "    uv = inUV;\n"
     "    color = inColor;\n"
     "}\n";
@@ -23,15 +23,18 @@ const char* Shader::m_fragmentShaderSource =
     "in vec2 uv;\n"
     "in vec4 color;\n"
     "out vec4 outColor;\n"
-    "uniform sampler2D textures[32];\n"
-    "uniform int textureCount;\n"
-    "uniform int enabledTexture;\n"
+    "uniform sampler2D u_textures[32];\n"
+    "uniform int u_textureCount;\n"
+    "uniform int u_enabledTexture;\n"
+    "uniform vec4 u_color;\n"
+    "uniform bool u_vertexColorEnabled;\n"
     "void main()\n"
     "{\n"
-    "    if (enabledTexture >= 0 && enabledTexture < textureCount)\n"
-    "        outColor = texture(textures[enabledTexture], uv) * color;\n"
+    "    vec4 vertexColor = u_vertexColorEnabled ? color : vec4(1.0f);\n"
+    "    if (u_enabledTexture >= 0)\n"
+    "        outColor = texture(u_textures[u_enabledTexture], uv) * vertexColor * u_color;\n"
     "    else\n"
-    "        outColor = color;\n"
+    "        outColor = vertexColor * u_color;\n"
     "}\n";
 
 Logger Shader::m_logger("Shaders");
@@ -49,6 +52,7 @@ Shader::Shader()
     , m_color(1)
     , m_textureCount(0)
     , m_enabledTexture(-1)
+    , m_vertexColorEnabled(false)
     , m_name("BasicShader")
     , m_hasWarnedAboutNotBeingInitialized(false)
 {
@@ -110,12 +114,13 @@ bool Shader::init()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    m_projectionMatrixUniformLoc = glGetUniformLocation(m_program, "projectionMatrix");
-    m_modelViewMatrixUniformLoc = glGetUniformLocation(m_program, "modelViewMatrix");
-    m_colorUniformLoc = glGetUniformLocation(m_program, "color");
-    m_texturesUniformLoc = glGetUniformLocation(m_program, "textures");
-    m_textureCountUniformLoc = glGetUniformLocation(m_program, "textureCount");
-    m_enabledTextureUniformLoc = glGetUniformLocation(m_program, "enabledTexture");
+    m_projectionMatrixUniformLoc = glGetUniformLocation(m_program, "u_projectionMatrix");
+    m_modelViewMatrixUniformLoc = glGetUniformLocation(m_program, "u_modelViewMatrix");
+    m_colorUniformLoc = glGetUniformLocation(m_program, "u_color");
+    m_texturesUniformLoc = glGetUniformLocation(m_program, "u_textures");
+    m_textureCountUniformLoc = glGetUniformLocation(m_program, "u_textureCount");
+    m_enabledTextureUniformLoc = glGetUniformLocation(m_program, "u_enabledTexture");
+    m_vertexColorEnabledUniformLoc = glGetUniformLocation(m_program, "u_vertexColorEnabled");
 
     return true;
 }
@@ -171,6 +176,11 @@ void Shader::setEnabledTexture(int index)
     m_enabledTexture = index;
 }
 
+void Shader::setVertexColorEnabled(bool enabled)
+{
+    m_vertexColorEnabled = enabled;
+}
+
 GLuint Shader::getProgram() const
 {
     return m_program;
@@ -194,6 +204,11 @@ const glm::vec4& Shader::getColor() const
 int Shader::getEnabledTexture() const
 {
     return m_enabledTexture;
+}
+
+bool Shader::isVertexColorEnabled() const
+{
+    return m_vertexColorEnabled;
 }
 
 const char* Shader::getName() const
@@ -223,4 +238,5 @@ void Shader::updateUniforms()
     glUniform1iv(m_texturesUniformLoc, 32, (GLint*)m_textures);
     glUniform1i(m_textureCountUniformLoc, m_textureCount);
     glUniform1i(m_enabledTextureUniformLoc, m_enabledTexture);
+    glUniform1i(m_vertexColorEnabledUniformLoc, m_vertexColorEnabled);
 }

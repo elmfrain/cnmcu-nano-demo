@@ -24,6 +24,9 @@ namespace em
         bool mouseMoved() const; // Has the mouse just moved?
         bool mouseScrolled() const; // Has the mouse just scrolled?
         glm::vec2 getMouseScroll() const; // Get mouse scroll
+
+        void setLockMouse(bool lock) const; // Lock the mouse to the window
+        bool isMouseLocked() const; // Is the mouse locked to the window?
     private:
         static const int INT_KEY_FLAGS_COUNT = 88;
         static const int INT_MOUSE_FLAGS_COUNT = 1;
@@ -44,6 +47,7 @@ namespace em
         glm::vec2 m_mouseScroll;
         bool m_mouseMoved;
         bool m_mouseScrolled;
+        mutable bool m_mouseLocked;
 
         void update();
         void registerCallbacks();

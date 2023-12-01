@@ -87,6 +87,24 @@ glm::vec2 Input::getMouseScroll() const
     return m_mouseScroll;
 }
 
+void Input::setLockMouse(bool lock) const
+{
+    if(m_mouseLocked == lock)
+        return;
+
+    m_mouseLocked = lock;
+
+    if(lock)
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    else
+        glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+bool Input::isMouseLocked() const
+{
+    return m_mouseLocked;
+}
+
 void Input::update()
 {
     clearIntermittentBuffers();

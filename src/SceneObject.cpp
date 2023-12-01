@@ -183,9 +183,8 @@ std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()
     {
     public:
         Root()
-            : SceneObject(ROOT)
+            : SceneObject(ROOT, getRootName())
         {
-            setName(getRootName());
         }
 
         ~Root()

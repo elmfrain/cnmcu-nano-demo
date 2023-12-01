@@ -58,6 +58,9 @@ bool VisualizerApp::start(AppParams& options)
     // Setup input
     m_input = std::make_unique<Input>(m_window);
 
+    // Setup scene
+    m_scene.init();
+
     m_initialized = true;
 
     return true;
@@ -76,8 +79,11 @@ bool VisualizerApp::runLoop()
         return false;
     }
 
+    double currentTime = glfwGetTime();
+    float dt = currentTime - m_lastFrameTime;
+    m_lastFrameTime = currentTime;
+    m_scene.update(dt);
     m_input->update();
-    m_scene.update(0.0f);
 
     m_scene.draw();
 
@@ -101,6 +107,8 @@ bool VisualizerApp::terminate()
         m_logger.errorf("Application has not been initialized");
         return false;
     }
+
+    m_scene.destroy();
 
     glfwTerminate();
 
@@ -149,6 +157,11 @@ AppParams VisualizerApp::getParams()
 const Input& VisualizerApp::getInput()
 {
     return *m_input;
+}
+
+GLFWwindow* VisualizerApp::getWindowHandle()
+{
+    return m_window;
 }
 
 VisualizerApp& VisualizerApp::getInstance()

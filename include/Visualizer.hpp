@@ -38,6 +38,7 @@ namespace em {
 
         AppParams getParams();
         const Input& getInput();
+        GLFWwindow* getWindowHandle();
 
         static VisualizerApp& getInstance();
     private:
@@ -48,6 +49,7 @@ namespace em {
         bool m_fullscreen;
         bool m_shouldClose;
         bool m_initialized;
+        double m_lastFrameTime;
 
         VisualizerScene m_scene;
     };

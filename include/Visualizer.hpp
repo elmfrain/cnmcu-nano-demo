@@ -5,6 +5,7 @@
 #include <GLFWInclude.hpp>
 #include <Input.hpp>
 #include <glm/glm.hpp>
+#include <VisualizerScene.hpp>
 
 #include <memory>
 #include <inttypes.h>
@@ -47,5 +48,7 @@ namespace em {
         bool m_fullscreen;
         bool m_shouldClose;
         bool m_initialized;
+
+        VisualizerScene m_scene;
     };
 }

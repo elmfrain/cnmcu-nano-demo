@@ -27,11 +27,11 @@ bool VisualizerApp::start(AppParams& options)
 
     // Setup Glfw window
     glfwWindowHint(GLFW_SAMPLES, options.msaaSamples);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_RESIZABLE, options.resizable);
 
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     m_window = glfwCreateWindow(options.width, options.height, "Visualizer", nullptr, nullptr);
 
@@ -76,10 +76,11 @@ bool VisualizerApp::runLoop()
         return false;
     }
 
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     m_input->update();
+    m_scene.update(0.0f);
+
+    m_scene.draw();
+
     glfwSwapBuffers(m_window);
     glfwPollEvents();
     m_shouldClose = glfwWindowShouldClose(m_window);

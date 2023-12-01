@@ -18,6 +18,8 @@ add_executable(${PROJECT_NAME}
   src/MeshObject.cpp
   src/MeshBuilder.cpp
   src/VisualizerScene.cpp
+
+  src/shaders/Shader.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

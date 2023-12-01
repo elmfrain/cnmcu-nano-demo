@@ -15,6 +15,9 @@ add_executable(${PROJECT_NAME}
   src/Input.cpp
   src/SceneObject.cpp
   src/Camera.cpp
+  src/MeshObject.cpp
+  src/MeshBuilder.cpp
+  src/VisualizerScene.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Camera.hpp>
+#include <shaders/Shader.hpp>
 
 namespace em
 {
@@ -10,10 +11,13 @@ namespace em
         VisualizerScene();
         ~VisualizerScene();
 
+        void init();
         void update(float dt);
         void draw();
+        void destroy();
 
     private:
         Camera mainCamera;
+        Shader basicShader;
     };
 }

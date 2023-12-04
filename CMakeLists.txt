@@ -8,6 +8,16 @@ add_subdirectory("dep/glad")
 
 add_subdirectory("dep/glm")
 
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL " " FORCE)
+set(ASSIMP_BUILD_OBJ_IMPORTER ON  CACHE BOOL " " FORCE)
+set(ASSIMP_BUILD_PLY_IMPORTER ON  CACHE BOOL " " FORCE)
+set(ASSIMP_NO_EXPORT          ON  CACHE BOOL " " FORCE)
+set(ASSIMP_BUILD_TESTS        OFF CACHE BOOL " " FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL " " FORCE)
+set(ASSIMP_INSTALL            OFF CACHE BOOL " " FORCE)
+set(BUILD_SHARED_LIBS         OFF CACHE BOOL " " FORCE)
+add_subdirectory("dep/assimp")
+
 add_executable(${PROJECT_NAME}
   src/main.cpp
   src/Visualizer.cpp
@@ -18,6 +28,8 @@ add_executable(${PROJECT_NAME}
   src/MeshObject.cpp
   src/MeshBuilder.cpp
   src/VisualizerScene.cpp
+  src/Mesh.cpp
+  src/stb_image.cpp
 
   src/shaders/Shader.cpp
 )
@@ -33,6 +45,7 @@ target_link_libraries(${PROJECT_NAME}
   glfw
   glad
   glm
+  assimp
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

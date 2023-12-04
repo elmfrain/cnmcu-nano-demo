@@ -130,6 +130,8 @@ void VisualizerScene::draw()
         vertex(nullptr, -0.5f,  0.5f, 0.0f);
     }
 
+    glm::ivec2 windowSize = VisualizerApp::getInstance().getWindowSize();
+    glViewport(0, 0, windowSize.x, windowSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 

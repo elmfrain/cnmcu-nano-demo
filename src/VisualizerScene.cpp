@@ -98,6 +98,12 @@ void VisualizerScene::init()
     basicShader.init();
 
     mainCamera.getTransform().position.z = -2.0f;
+
+    initMeshes();
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 }
 
 void VisualizerScene::update(float dt)
@@ -108,39 +114,42 @@ void VisualizerScene::update(float dt)
 
 void VisualizerScene::draw()
 {
-    static MeshBuilder* meshBuilder = nullptr;
-
-    if(!meshBuilder)
-    {
-        VertexFormat vtxFmt;
-
-        vtxFmt.size = 1;
-        vtxFmt[0].data = EMVF_ATTRB_USAGE_POS |
-                         EMVF_ATTRB_TYPE_FLOAT |
-                         EMVF_ATTRB_SIZE(3) |
-                         EMVF_ATTRB_NORMALIZED_FALSE;
-
-        meshBuilder = new MeshBuilder(vtxFmt);
-
-        meshBuilder->index(6, 0, 1, 2, 0, 2, 3);
-        meshBuilder->
-        vertex(nullptr, -0.5f, -0.5f, 0.0f).
-        vertex(nullptr,  0.5f, -0.5f, 0.0f).
-        vertex(nullptr,  0.5f,  0.5f, 0.0f).
-        vertex(nullptr, -0.5f,  0.5f, 0.0f);
-    }
-
     glm::ivec2 windowSize = VisualizerApp::getInstance().getWindowSize();
     glViewport(0, 0, windowSize.x, windowSize.y);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     basicShader.setProjectionMatrix(mainCamera.getViewProjectionMatrix());
     basicShader.use();
-    meshBuilder->drawElements(GL_TRIANGLES);
+    sareMesh->render(GL_TRIANGLES);
+    planetMesh->render(GL_TRIANGLES);
 }
 
 void VisualizerScene::destroy()
 {
     basicShader.destroy();
+
+    destroyMeshes();
+}
+
+void VisualizerScene::initMeshes()
+{
+    VertexFormat vtxFmt;
+
+    vtxFmt.size = 1;
+    vtxFmt[0].data = EMVF_ATTRB_USAGE_POS |
+                     EMVF_ATTRB_TYPE_FLOAT |
+                     EMVF_ATTRB_SIZE(3) |
+                     EMVF_ATTRB_NORMALIZED_FALSE;
+
+    sareMesh = Mesh::load("res/sare.obj")[0];
+    sareMesh->makeRenderable(vtxFmt);
+
+    planetMesh = Mesh::load("res/planet.obj")[0];
+    planetMesh->makeRenderable(vtxFmt);
+}
+
+void VisualizerScene::destroyMeshes()
+{
+    sareMesh = nullptr;
+    planetMesh = nullptr;
 }

@@ -2,6 +2,7 @@
 
 #include <Camera.hpp>
 #include <shaders/Shader.hpp>
+#include <Mesh.hpp>
 
 namespace em
 {
@@ -19,5 +20,11 @@ namespace em
     private:
         Camera mainCamera;
         Shader basicShader;
+
+        Mesh::Ptr sareMesh;
+        Mesh::Ptr planetMesh;
+
+        void initMeshes();
+        void destroyMeshes();
     };
 }

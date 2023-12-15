@@ -3,6 +3,7 @@
 #include <GLInclude.hpp>
 #include <MeshBuilder.hpp>
 #include <Visualizer.hpp>
+#include <MeshObject.hpp>
 // #include <iostream>
 
 using namespace em;
@@ -99,11 +100,15 @@ void VisualizerScene::init()
 
     mainCamera.getTransform().position.z = -2.0f;
 
-    initMeshes();
+    initObjects();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
 }
 
 void VisualizerScene::update(float dt)
@@ -119,37 +124,57 @@ void VisualizerScene::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     basicShader.setProjectionMatrix(mainCamera.getViewProjectionMatrix());
-    basicShader.use();
-    sareMesh->render(GL_TRIANGLES);
-    planetMesh->render(GL_TRIANGLES);
+
+    for(auto& object : objects)
+    {
+        object.second->draw(basicShader);
+    }
 }
 
 void VisualizerScene::destroy()
 {
     basicShader.destroy();
 
-    destroyMeshes();
+    destroyObjects();
 }
 
-void VisualizerScene::initMeshes()
+void VisualizerScene::initObjects()
 {
     VertexFormat vtxFmt;
 
-    vtxFmt.size = 1;
+    vtxFmt.size = 2;
     vtxFmt[0].data = EMVF_ATTRB_USAGE_POS |
                      EMVF_ATTRB_TYPE_FLOAT |
                      EMVF_ATTRB_SIZE(3) |
                      EMVF_ATTRB_NORMALIZED_FALSE;
+    vtxFmt[1].data = EMVF_ATTRB_USAGE_UV |
+                     EMVF_ATTRB_TYPE_FLOAT |
+                     EMVF_ATTRB_SIZE(2) |
+                     EMVF_ATTRB_NORMALIZED_FALSE;
 
-    sareMesh = Mesh::load("res/sare.obj")[0];
+    MeshObject& sare = createObject<MeshObject>("sare");
+    Mesh::Ptr sareMesh = Mesh::load("res/sare.obj")[0];
     sareMesh->makeRenderable(vtxFmt);
+    sare.setMesh(sareMesh);
 
-    planetMesh = Mesh::load("res/planet.obj")[0];
+    MeshObject& planet = createObject<MeshObject>("planet");
+    Mesh::Ptr planetMesh = Mesh::load("res/planet.obj")[0];
     planetMesh->makeRenderable(vtxFmt);
+    planet.setMesh(planetMesh);
+
+    MeshObject& ring = createObject<MeshObject>("ring");
+    Mesh::Ptr ringMesh = Mesh::load("res/ring.obj")[0];
+    ringMesh->makeRenderable(vtxFmt);
+    ring.setMesh(ringMesh);
+
+    MeshObject& backdrop = createObject<MeshObject>("backdrop");
+    Mesh::Ptr backdropMesh = Mesh::load("res/backdrop.obj")[0];
+    backdropMesh->makeRenderable(vtxFmt);
+    
+    backdrop.setMesh(backdropMesh);
 }
 
-void VisualizerScene::destroyMeshes()
+void VisualizerScene::destroyObjects()
 {
-    sareMesh = nullptr;
-    planetMesh = nullptr;
+    objects.clear();
 }

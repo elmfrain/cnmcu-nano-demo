@@ -22,7 +22,7 @@ namespace em
         virtual ~Camera();
 
         virtual void update(float dt) override;
-        virtual void draw() override;
+        virtual void draw(Shader& shader) override;
 
         ProjectionMode projectionMode;
         FOVMode fovMode;

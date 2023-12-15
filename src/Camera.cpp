@@ -23,7 +23,7 @@ void Camera::update(float dt)
 {
 }
 
-void Camera::draw()
+void Camera::draw(Shader& shader)
 {
 }
 

@@ -30,8 +30,6 @@ namespace em
 
         const char* getName() const;
     private:
-        GLuint m_program;
-
         GLuint m_projectionMatrixUniformLoc;
         GLuint m_modelViewMatrixUniformLoc;
         GLuint m_colorUniformLoc;
@@ -57,6 +55,7 @@ namespace em
     protected:
         const char* m_name;
         static Logger m_logger;
+        GLuint m_program;
 
         GLuint generateProgram(const char* vertexShaderSource, const char* fragmentShaderSource);
         void getDefaultUniformLocations();

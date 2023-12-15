@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <shaders/Shader.hpp>
 
 #include "Logger.hpp"
 
@@ -57,7 +58,7 @@ namespace em
         SceneObject& operator=(const SceneObject& other) = delete;
 
         virtual void update(float dt) = 0;
-        virtual void draw() = 0;
+        virtual void draw(Shader& shader) = 0;
 
         Type getType() const;
         const std::string& getName() const;

@@ -195,7 +195,7 @@ std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()
         {
         }
 
-        void draw() override
+        void draw(Shader& shader) override
         {
         }
     };

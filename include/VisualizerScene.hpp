@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Camera.hpp>
+#include <LightObject.hpp>
 #include <shaders/PhongShader.hpp>
 #include <unordered_map>
 #include <string>
@@ -22,8 +23,10 @@ namespace em
     private:
         Camera mainCamera;
         PhongShader phongShader;
+        Logger logger;
 
         std::unordered_map<std::string, std::unique_ptr<SceneObject>> objects;
+        std::unordered_map<std::string, std::unique_ptr<LightObject>> lights;
 
         template <typename T>
         T& createObject(const std::string& name)
@@ -38,7 +41,11 @@ namespace em
             return static_cast<T>(objects[name]);
         }
 
+        LightObject& createLight(const std::string& name);
+        LightObject& getLight(const std::string& name);
+
         void initObjects();
-        void destroyObjects();
+        void initLights();
+        void destroyObjectsAndLights();
     };
 }

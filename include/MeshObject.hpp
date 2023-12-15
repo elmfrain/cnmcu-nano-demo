@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SceneObject.hpp>
+#include <Mesh.hpp>
 
 namespace em 
 {
@@ -11,10 +12,10 @@ namespace em
         virtual ~MeshObject();
 
         virtual void update(float dt) override;
-        virtual void draw() override;
+        virtual void draw(Shader& shader) override;
 
-    //     void setMesh(Mesh* mesh);
-    //     Mesh* getMesh() const;
+        void setMesh(Mesh::Ptr mesh);
+        Mesh::Ptr getMesh() const;
 
     //     void setMaterial(Material* material);
     //     Material* getMaterial() const;
@@ -22,5 +23,7 @@ namespace em
     // private:
     //     Mesh* mesh;
     //     Material* material;
+    private:
+        Mesh::Ptr mesh;
     };
 }

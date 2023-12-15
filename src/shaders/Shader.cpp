@@ -56,6 +56,8 @@ Shader::Shader()
     , m_name("BasicShader")
     , m_hasWarnedAboutNotBeingInitialized(false)
 {
+  for(int i = 0; i < sizeof(m_textures) / sizeof(GLuint); i++)
+    m_textures[i] = i;
 }
 
 bool Shader::init()

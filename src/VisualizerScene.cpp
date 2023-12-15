@@ -97,6 +97,12 @@ VisualizerScene::~VisualizerScene()
 void VisualizerScene::init()
 {
     phongShader.init();
+    PhongMaterial material;
+    material.roughnessToShininess(0.2f);
+    phongShader.setMaterial(material);
+    phongShader.setLightCount(1);
+    phongShader.getLight(0).position = glm::vec3(0.0f, 1.0f, 0.0f);
+    phongShader.getLight(0).setLight(glm::vec3(1.0f), 1.0f);
 
     mainCamera.getTransform().position.z = -2.0f;
 

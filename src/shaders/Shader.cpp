@@ -2,7 +2,7 @@
 
 using namespace em;
 
-const char* Shader::m_vertexShaderSource =
+const char* Shader::basicVertexShaderSource =
     "#version 330 core\n"
     "layout(location = 0) in vec3 inPos;\n"
     "layout(location = 1) in vec2 inUV;\n"
@@ -18,7 +18,7 @@ const char* Shader::m_vertexShaderSource =
     "    color = inColor;\n"
     "}\n";
 
-const char* Shader::m_fragmentShaderSource =
+const char* Shader::basicFragmentShaderSource =
     "#version 330 core\n"
     "in vec2 uv;\n"
     "in vec4 color;\n"
@@ -62,67 +62,10 @@ Shader::Shader()
 
 bool Shader::init()
 {
-    if(m_program != 0)
-    {
-        m_logger.warnf("Shader %s is already initialized", getName());
-        return true;
-    }
-
-    m_logger.infof("Initializing shader %s", getName());
-
-    m_textureCount = getMaxTextureUnits();
-
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &m_vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    GLint success;
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        char infoLog[512];
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        m_logger.errorf("Vertex shader compilation failed for %s: %s", getName(), infoLog);
+    if((m_program = generateProgram(basicVertexShaderSource, basicFragmentShaderSource)) == 0)
         return false;
-    }
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &m_fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        char infoLog[512];
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        m_logger.errorf("Fragment shader compilation failed for %s: %s", getName(), infoLog);
-        return false;
-    }
-
-    m_program = glCreateProgram();
-    glAttachShader(m_program, vertexShader);
-    glAttachShader(m_program, fragmentShader);
-    glLinkProgram(m_program);
-
-    glGetProgramiv(m_program, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        char infoLog[512];
-        glGetProgramInfoLog(m_program, 512, NULL, infoLog);
-        m_logger.errorf("Shader program linking failed for %s: %s", getName(), infoLog);
-        return false;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    m_projectionMatrixUniformLoc = glGetUniformLocation(m_program, "u_projectionMatrix");
-    m_modelViewMatrixUniformLoc = glGetUniformLocation(m_program, "u_modelViewMatrix");
-    m_colorUniformLoc = glGetUniformLocation(m_program, "u_color");
-    m_texturesUniformLoc = glGetUniformLocation(m_program, "u_textures");
-    m_textureCountUniformLoc = glGetUniformLocation(m_program, "u_textureCount");
-    m_enabledTextureUniformLoc = glGetUniformLocation(m_program, "u_enabledTexture");
-    m_vertexColorEnabledUniformLoc = glGetUniformLocation(m_program, "u_vertexColorEnabled");
+    getDefaultUniformLocations();
 
     return true;
 }
@@ -139,7 +82,7 @@ void Shader::use()
         return;
     }
 
-    updateUniforms();
+    updateDefaultUniforms();
 
     glUseProgram(m_program);
 }
@@ -232,7 +175,67 @@ GLuint Shader::getMaxTextureUnits()
     return maxTextureUnits;
 }
 
-void Shader::updateUniforms()
+GLuint Shader::generateProgram(const char* vertexShaderSource, const char* fragmentShaderSource)
+{
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    GLint success;
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        char infoLog[512];
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        m_logger.errorf("Vertex shader compilation failed for %s: %s", getName(), infoLog);
+        return 0;
+    }
+
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        char infoLog[512];
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        m_logger.errorf("Fragment shader compilation failed for %s: %s", getName(), infoLog);
+        return 0;
+    }
+
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success)
+    {
+        char infoLog[512];
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
+        m_logger.errorf("Shader program linking failed for %s: %s", getName(), infoLog);
+        return 0;
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
+}
+
+void Shader::getDefaultUniformLocations()
+{
+    m_projectionMatrixUniformLoc = glGetUniformLocation(m_program, "u_projectionMatrix");
+    m_modelViewMatrixUniformLoc = glGetUniformLocation(m_program, "u_modelViewMatrix");
+    m_colorUniformLoc = glGetUniformLocation(m_program, "u_color");
+    m_texturesUniformLoc = glGetUniformLocation(m_program, "u_textures");
+    m_textureCountUniformLoc = glGetUniformLocation(m_program, "u_textureCount");
+    m_enabledTextureUniformLoc = glGetUniformLocation(m_program, "u_enabledTexture");
+    m_vertexColorEnabledUniformLoc = glGetUniformLocation(m_program, "u_vertexColorEnabled");
+}
+
+void Shader::updateDefaultUniforms()
 {
     glUniformMatrix4fv(m_projectionMatrixUniformLoc, 1, GL_FALSE, &m_projectionMatrix[0][0]);
     glUniformMatrix4fv(m_modelViewMatrixUniformLoc, 1, GL_FALSE, &m_modelViewMatrix[0][0]);

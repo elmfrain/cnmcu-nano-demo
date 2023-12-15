@@ -11,7 +11,7 @@ namespace em
     public:
         Shader();
 
-        bool init();
+        virtual bool init();
         void use();
         void destroy();
 
@@ -49,15 +49,17 @@ namespace em
         bool m_vertexColorEnabled;
 
         bool m_hasWarnedAboutNotBeingInitialized;
-        const char* m_name;
 
-        static const char* m_vertexShaderSource;
-        static const char* m_fragmentShaderSource;
+        static const char* basicVertexShaderSource;
+        static const char* basicFragmentShaderSource;
 
         static GLuint getMaxTextureUnits();
     protected:
+        const char* m_name;
         static Logger m_logger;
 
-        virtual void updateUniforms();
+        GLuint generateProgram(const char* vertexShaderSource, const char* fragmentShaderSource);
+        void getDefaultUniformLocations();
+        virtual void updateDefaultUniforms();
     };
 }

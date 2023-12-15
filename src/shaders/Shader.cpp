@@ -82,7 +82,7 @@ void Shader::use()
         return;
     }
 
-    updateDefaultUniforms();
+    updateUniforms();
 
     glUseProgram(m_program);
 }
@@ -235,7 +235,7 @@ void Shader::getDefaultUniformLocations()
     m_vertexColorEnabledUniformLoc = glGetUniformLocation(m_program, "u_vertexColorEnabled");
 }
 
-void Shader::updateDefaultUniforms()
+void Shader::updateUniforms()
 {
     glUniformMatrix4fv(m_projectionMatrixUniformLoc, 1, GL_FALSE, &m_projectionMatrix[0][0]);
     glUniformMatrix4fv(m_modelViewMatrixUniformLoc, 1, GL_FALSE, &m_modelViewMatrix[0][0]);

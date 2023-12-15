@@ -59,6 +59,6 @@ namespace em
 
         GLuint generateProgram(const char* vertexShaderSource, const char* fragmentShaderSource);
         void getDefaultUniformLocations();
-        virtual void updateDefaultUniforms();
+        virtual void updateUniforms();
     };
 }

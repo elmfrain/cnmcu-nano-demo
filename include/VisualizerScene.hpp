@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Camera.hpp>
-#include <shaders/Shader.hpp>
+#include <shaders/PhongShader.hpp>
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -21,7 +21,7 @@ namespace em
 
     private:
         Camera mainCamera;
-        Shader basicShader;
+        PhongShader phongShader;
 
         std::unordered_map<std::string, std::unique_ptr<SceneObject>> objects;
 

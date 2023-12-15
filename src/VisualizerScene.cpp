@@ -96,7 +96,7 @@ VisualizerScene::~VisualizerScene()
 
 void VisualizerScene::init()
 {
-    basicShader.init();
+    phongShader.init();
 
     mainCamera.getTransform().position.z = -2.0f;
 
@@ -123,17 +123,18 @@ void VisualizerScene::draw()
     glViewport(0, 0, windowSize.x, windowSize.y);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    basicShader.setProjectionMatrix(mainCamera.getViewProjectionMatrix());
+    phongShader.setProjectionMatrix(mainCamera.getViewProjectionMatrix());
+    phongShader.setCameraPos(mainCamera.getTransform().position);
 
     for(auto& object : objects)
     {
-        object.second->draw(basicShader);
+        object.second->draw(phongShader);
     }
 }
 
 void VisualizerScene::destroy()
 {
-    basicShader.destroy();
+    phongShader.destroy();
 
     destroyObjects();
 }
@@ -142,7 +143,7 @@ void VisualizerScene::initObjects()
 {
     VertexFormat vtxFmt;
 
-    vtxFmt.size = 2;
+    vtxFmt.size = 3;
     vtxFmt[0].data = EMVF_ATTRB_USAGE_POS |
                      EMVF_ATTRB_TYPE_FLOAT |
                      EMVF_ATTRB_SIZE(3) |
@@ -150,6 +151,10 @@ void VisualizerScene::initObjects()
     vtxFmt[1].data = EMVF_ATTRB_USAGE_UV |
                      EMVF_ATTRB_TYPE_FLOAT |
                      EMVF_ATTRB_SIZE(2) |
+                     EMVF_ATTRB_NORMALIZED_FALSE;
+    vtxFmt[2].data = EMVF_ATTRB_USAGE_NORMAL |
+                     EMVF_ATTRB_TYPE_FLOAT |
+                     EMVF_ATTRB_SIZE(3) |
                      EMVF_ATTRB_NORMALIZED_FALSE;
 
     MeshObject& sare = createObject<MeshObject>("sare");

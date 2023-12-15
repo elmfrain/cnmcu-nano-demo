@@ -88,6 +88,7 @@ static void rotateCamera(Camera& camera, float dt)
 VisualizerScene::VisualizerScene()
 {
     mainCamera.setName("main-camera");
+    logger = Logger("VisualizerScene");
 }
 
 VisualizerScene::~VisualizerScene()
@@ -98,15 +99,15 @@ void VisualizerScene::init()
 {
     phongShader.init();
     PhongMaterial material;
-    material.roughnessToShininess(0.2f);
+    material.diffuse = glm::vec3(0.0f);
+    material.specular = glm::vec3(1.0f);
+    material.roughnessToShininess(0.23f);
     phongShader.setMaterial(material);
-    phongShader.setLightCount(1);
-    phongShader.getLight(0).position = glm::vec3(0.0f, 1.0f, 0.0f);
-    phongShader.getLight(0).setLight(glm::vec3(1.0f), 1.0f);
 
     mainCamera.getTransform().position.z = -2.0f;
 
     initObjects();
+    initLights();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -131,6 +132,14 @@ void VisualizerScene::draw()
 
     phongShader.setProjectionMatrix(mainCamera.getViewProjectionMatrix());
     phongShader.setCameraPos(mainCamera.getTransform().position);
+    phongShader.setLightCount(lights.size());
+    int i = 0;
+    for(auto it = lights.begin(); it != lights.end(); ++it)
+    {
+        if(i >= MAX_LIGHTS) break;
+        phongShader.getLight(i).position = it->second->getTransform().position;
+        phongShader.getLight(i++).setLight(it->second->getColor(), it->second->getIntensity());
+    }
 
     for(auto& object : objects)
     {
@@ -142,7 +151,22 @@ void VisualizerScene::destroy()
 {
     phongShader.destroy();
 
-    destroyObjects();
+    destroyObjectsAndLights();
+}
+
+LightObject& VisualizerScene::createLight(const std::string& name)
+{
+    if(lights.size() == MAX_LIGHTS)
+        logger.warnf("Light %s will be ignored. Maximum number of lights reached.", name.c_str());
+
+
+    lights[name] = std::make_unique<LightObject>(name);
+    return static_cast<LightObject&>(lights[name].get()[0]);
+}
+
+LightObject& VisualizerScene::getLight(const std::string& name)
+{
+    return static_cast<LightObject&>(lights[name].get()[0]);
 }
 
 void VisualizerScene::initObjects()
@@ -185,7 +209,26 @@ void VisualizerScene::initObjects()
     backdrop.setMesh(backdropMesh);
 }
 
-void VisualizerScene::destroyObjects()
+void VisualizerScene::initLights()
+{
+    LightObject& cyan = createLight("cyan");
+    cyan.getTransform().position = glm::vec3(-3.0f, 5.0f, 4.0f);
+    cyan.setColor(glm::vec3(0.0f, 0.86f, 1.0f));
+    cyan.setIntensity(8.0f);
+
+    LightObject& magenta = createLight("magenta");
+    magenta.getTransform().position = glm::vec3(3.0f, 5.0f, -4.0f);
+    magenta.setColor(glm::vec3(1.0f, 0.0f, 0.77f));
+    magenta.setIntensity(8.0f);
+
+    LightObject& fore = createLight("fore");
+    fore.getTransform().position = glm::vec3(0.0f, 4.0f, 0.0f);
+    fore.setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+    fore.setIntensity(0.1f);
+}
+
+void VisualizerScene::destroyObjectsAndLights()
 {
     objects.clear();
+    lights.clear();
 }

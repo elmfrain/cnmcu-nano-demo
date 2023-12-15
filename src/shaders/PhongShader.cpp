@@ -74,6 +74,7 @@ const char* PhongShader::m_fragmentShaderSource =
     "    outColor *= u_color;\n"
     "    if(u_vertexColorEnabled) outColor *= color;\n"
     "    if(u_enabledTexture >= 0) outColor *= texture(u_textures[u_enabledTexture], uv);\n"
+    "    outColor = vec4(pow(outColor.rgb, vec3(0.45)), outColor.a);\n" // Apply gamma correction
     "}\n";
 
 PhongShader::PhongShader() : Shader()

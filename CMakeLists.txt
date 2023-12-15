@@ -32,6 +32,7 @@ add_executable(${PROJECT_NAME}
   src/stb_image.cpp
 
   src/shaders/Shader.cpp
+  src/shaders/PhongShader.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

@@ -35,6 +35,7 @@ add_executable(${PROJECT_NAME}
 
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp
+  src/shaders/Compositor.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

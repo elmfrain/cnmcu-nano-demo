@@ -22,10 +22,22 @@ const char* Compositor::fragmentShaderSource =
     "uniform float u_exposure;\n"
     "uniform float u_width;\n"
     "uniform float u_height;\n"
+    "vec3 acesTonemap(vec3 x)\n"
+    "{\n"
+    "    float a = 2.51f;\n"
+    "    float b = 0.03f;\n"
+    "    float c = 2.43f;\n"
+    "    float d = 0.59f;\n"
+    "    float e = 0.14f;\n"
+    "    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);\n"
+    "}\n"
     "void main()\n"
     "{\n"
     "    vec4 color = texture(u_texture, uv);\n"
     "    color.rgb = color.rgb * u_exposure;\n"
+    "    float grayscale = dot(color.rgb, vec3(0.21, 0.72, 0.07));\n" // Convert to grayscale (color desaturation)
+    "    color.rgb += grayscale * grayscale;\n" // Mix with grayscale (color desaturation from luminance)
+    "    color.rgb = acesTonemap(color.rgb);\n" // Apply ACES tonemapping
     "    color.rgb = pow(color.rgb, vec3(u_gamma));\n"
     "    outColor = color;\n"
     "}\n";
@@ -173,7 +185,7 @@ GLuint Compositor::generateShaderProgram()
 
 void Compositor::updateUniforms(Framebuffer& framebuffer)
 {
-    glUniform1f(m_gammaUniformLoc, m_gamma);
+    glUniform1f(m_gammaUniformLoc, 1.0f / m_gamma);
     glUniform1f(m_exposureUniformLoc, m_exposure);
     glUniform1f(m_widthUniformLoc, framebuffer.getWidth());
     glUniform1f(m_heightUniformLoc, framebuffer.getHeight());

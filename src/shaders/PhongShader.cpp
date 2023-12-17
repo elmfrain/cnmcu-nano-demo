@@ -66,15 +66,15 @@ const char* PhongShader::m_fragmentShaderSource =
     "}\n"
     "void main()\n"
     "{\n"
+    "    outColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
     "    vec3 viewDir = normalize(u_cameraPos - fragPos);\n"
     "    for(int i = 0; i < u_lightCount; i++)\n"
     "    {\n"
-    "        outColor += vec4(calcLight(u_lights[i], viewDir), 1.0);\n"
+    "        outColor += vec4(calcLight(u_lights[i], viewDir), 0.0);\n"
     "    }\n"
     "    outColor *= u_color;\n"
     "    if(u_vertexColorEnabled) outColor *= color;\n"
     "    if(u_enabledTexture >= 0) outColor *= texture(u_textures[u_enabledTexture], uv);\n"
-    "    outColor = vec4(pow(outColor.rgb, vec3(0.45)), outColor.a);\n" // Apply gamma correction
     "}\n";
 
 PhongShader::PhongShader() : Shader()

@@ -167,8 +167,6 @@ VisualizerApp& VisualizerApp::getInstance()
 void VisualizerApp::onWindowResize(GLFWwindow* window, int width, int height)
 {
     VisualizerApp& app = VisualizerApp::getInstance();
-    app.m_params.width = width;
-    app.m_params.height = height;
     app.m_windowSize = glm::ivec2(width, height);
     app.m_scene.onWindowResize(width, height);
 }

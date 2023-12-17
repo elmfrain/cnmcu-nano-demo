@@ -2,6 +2,8 @@
 
 using namespace em;
 
+#include <cstring>
+
 MeshObject::MeshObject(const std::string& name)
     : SceneObject(MESH, name)
 {
@@ -30,6 +32,12 @@ void MeshObject::draw(Shader& shader)
         else 
             shader.setEnabledTexture(-1);
 
+        if(strcmp(shader.getName(), "PhongShader") == 0)
+        {
+            PhongShader& phongShader = static_cast<PhongShader&>(shader);
+            phongShader.setMaterial(material);
+        }
+
         shader.use();
         mesh->render(GL_TRIANGLES);
     }
@@ -43,4 +51,14 @@ void MeshObject::setMesh(Mesh::Ptr mesh)
 Mesh::Ptr MeshObject::getMesh() const
 {
     return mesh;
+}
+
+void MeshObject::setMaterial(const PhongMaterial& material)
+{
+    this->material = material;
+}
+
+PhongMaterial MeshObject::getMaterial() const
+{
+    return material;
 }

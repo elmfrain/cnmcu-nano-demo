@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SceneObject.hpp>
+#include <shaders/PhongShader.hpp>
 #include <Mesh.hpp>
 
 namespace em 
@@ -17,13 +18,11 @@ namespace em
         void setMesh(Mesh::Ptr mesh);
         Mesh::Ptr getMesh() const;
 
-    //     void setMaterial(Material* material);
-    //     Material* getMaterial() const;
+        void setMaterial(const PhongMaterial& material);
+        PhongMaterial getMaterial() const;
 
-    // private:
-    //     Mesh* mesh;
-    //     Material* material;
     private:
         Mesh::Ptr mesh;
+        PhongMaterial material;
     };
 }

@@ -97,6 +97,9 @@ VisualizerScene::~VisualizerScene()
 
 void VisualizerScene::init()
 {
+    auto windowSize = VisualizerApp::getInstance().getWindowSize();
+    framebuffer.init(800,600);
+
     phongShader.init();
     PhongMaterial material;
     material.diffuse = glm::vec3(0.0f);
@@ -141,17 +144,32 @@ void VisualizerScene::draw()
         phongShader.getLight(i++).setLight(it->second->getColor(), it->second->getIntensity());
     }
 
+    framebuffer.clear();
+
     for(auto& object : objects)
     {
         object.second->draw(phongShader);
     }
+
+    framebuffer.unbind();
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getHandle());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, framebuffer.getWidth(), framebuffer.getHeight(), 0, 0, windowSize.x, windowSize.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
 void VisualizerScene::destroy()
 {
+    framebuffer.destroy();
+
     phongShader.destroy();
 
     destroyObjectsAndLights();
+}
+
+void VisualizerScene::onWindowResize(int width, int height)
+{
+    framebuffer.resize(width, height);
 }
 
 LightObject& VisualizerScene::createLight(const std::string& name)

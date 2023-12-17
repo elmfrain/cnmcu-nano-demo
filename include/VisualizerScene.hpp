@@ -3,6 +3,7 @@
 #include <Camera.hpp>
 #include <LightObject.hpp>
 #include <shaders/PhongShader.hpp>
+#include <Framebuffer.hpp>
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -20,8 +21,11 @@ namespace em
         void draw();
         void destroy();
 
+        void onWindowResize(int width, int height);
+
     private:
         Camera mainCamera;
+        Framebuffer framebuffer;
         PhongShader phongShader;
         Logger logger;
 

@@ -50,6 +50,7 @@ namespace em {
         bool m_shouldClose;
         bool m_initialized;
         double m_lastFrameTime;
+        glm::ivec2 m_windowSize;
 
         VisualizerScene m_scene;
 

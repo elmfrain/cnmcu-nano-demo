@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME}
   src/Mesh.cpp
   src/stb_image.cpp
   src/LightObject.cpp
+  src/Framebuffer.cpp
 
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp

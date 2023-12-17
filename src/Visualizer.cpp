@@ -168,3 +168,11 @@ VisualizerApp& VisualizerApp::getInstance()
 {
     return *instance;
 }
+
+void VisualizerApp::onWindowResize(GLFWwindow* window, int width, int height)
+{
+    VisualizerApp& app = VisualizerApp::getInstance();
+    app.m_params.width = width;
+    app.m_params.height = height;
+    app.m_scene.onWindowResize(width, height);
+}

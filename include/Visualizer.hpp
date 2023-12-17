@@ -52,5 +52,7 @@ namespace em {
         double m_lastFrameTime;
 
         VisualizerScene m_scene;
+
+        static void onWindowResize(GLFWwindow* window, int width, int height);
     };
 }

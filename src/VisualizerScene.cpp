@@ -235,12 +235,12 @@ void VisualizerScene::initLights()
     LightObject& cyan = createLight("cyan");
     cyan.getTransform().position = glm::vec3(-3.0f, 5.0f, 4.0f);
     cyan.setColor(glm::vec3(0.0f, 0.86f, 1.0f));
-    cyan.setIntensity(8.0f);
+    cyan.setIntensity(3.0f);
 
     LightObject& magenta = createLight("magenta");
     magenta.getTransform().position = glm::vec3(3.0f, 5.0f, -4.0f);
     magenta.setColor(glm::vec3(1.0f, 0.0f, 0.77f));
-    magenta.setIntensity(8.0f);
+    magenta.setIntensity(3.0f);
 
     LightObject& fore = createLight("fore");
     fore.getTransform().position = glm::vec3(0.0f, 4.0f, 0.0f);

@@ -8,10 +8,10 @@ namespace em
     class Framebuffer
     {
     public:
-        Framebuffer(int width, int height);
+        Framebuffer();
         ~Framebuffer();
 
-        void init();
+        void init(int width, int height);
         void bind();
         void unbind();
         void destroy();

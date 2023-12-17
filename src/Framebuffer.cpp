@@ -4,21 +4,22 @@ using namespace em;
 
 Logger Framebuffer::logger("Framebuffer");
 
-Framebuffer::Framebuffer(int width, int height)
+Framebuffer::Framebuffer()
     : m_framebuffer(0)
     , m_colorTexture(0)
     , m_depthStencilRenderbuffer(0)
 {
-    m_width = std::max(width, 1);
-    m_height = std::max(height, 1);
 }
 
 Framebuffer::~Framebuffer()
 {
 }
 
-void Framebuffer::init()
+void Framebuffer::init(int width, int height)
 {
+    m_width = std::max(width, 1);
+    m_height = std::max(height, 1);
+
     glGenFramebuffers(1, &m_framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 

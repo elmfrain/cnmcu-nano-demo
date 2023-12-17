@@ -98,7 +98,7 @@ VisualizerScene::~VisualizerScene()
 void VisualizerScene::init()
 {
     auto windowSize = VisualizerApp::getInstance().getWindowSize();
-    framebuffer.init(800,600);
+    framebuffer.init(windowSize.x, windowSize.y);
 
     phongShader.init();
     PhongMaterial material;
@@ -106,6 +106,8 @@ void VisualizerScene::init()
     material.specular = glm::vec3(1.0f);
     material.roughnessToShininess(0.23f);
     phongShader.setMaterial(material);
+
+    compositor.init();
 
     mainCamera.getTransform().position.z = -2.0f;
 
@@ -145,6 +147,7 @@ void VisualizerScene::draw()
     }
 
     framebuffer.clear();
+    phongShader.use();
 
     for(auto& object : objects)
     {
@@ -153,9 +156,7 @@ void VisualizerScene::draw()
 
     framebuffer.unbind();
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.getHandle());
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, framebuffer.getWidth(), framebuffer.getHeight(), 0, 0, windowSize.x, windowSize.y, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    compositor.blit(framebuffer);
 }
 
 void VisualizerScene::destroy()
@@ -163,6 +164,8 @@ void VisualizerScene::destroy()
     framebuffer.destroy();
 
     phongShader.destroy();
+
+    compositor.destroy();
 
     destroyObjectsAndLights();
 }

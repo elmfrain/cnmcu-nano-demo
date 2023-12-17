@@ -4,6 +4,7 @@
 #include <LightObject.hpp>
 #include <shaders/PhongShader.hpp>
 #include <Framebuffer.hpp>
+#include <shaders/Compositor.hpp>
 #include <unordered_map>
 #include <string>
 #include <memory>
@@ -27,6 +28,7 @@ namespace em
         Camera mainCamera;
         Framebuffer framebuffer;
         PhongShader phongShader;
+        Compositor compositor;
         Logger logger;
 
         std::unordered_map<std::string, std::unique_ptr<SceneObject>> objects;

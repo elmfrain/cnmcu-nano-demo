@@ -101,6 +101,9 @@ bool VisualizerApp::runLoop()
     if(m_input->isKeyPressed(GLFW_KEY_F11))
         setFullscreen(!m_fullscreen);
 
+    if(m_input->isKeyPressed(GLFW_KEY_F5))
+        m_scene.reload();
+
     return true;
 }
 

@@ -120,6 +120,12 @@ void VisualizerScene::init()
     glEnable(GL_BLEND);
 }
 
+void VisualizerScene::reload()
+{
+    destroyObjectsAndLights();
+    initFromLua();
+}
+
 void VisualizerScene::update(float dt)
 {
     moveCamera(mainCamera, dt);

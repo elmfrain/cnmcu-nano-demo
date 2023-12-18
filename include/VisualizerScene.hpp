@@ -19,6 +19,7 @@ namespace em
         ~VisualizerScene();
 
         void init();
+        void reload();
         void update(float dt);
         void draw();
         void destroy();

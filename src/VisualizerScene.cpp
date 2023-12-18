@@ -8,6 +8,8 @@
 
 using namespace em;
 
+static VisualizerScene* host = nullptr;
+
 static void moveCamera(Camera& camera, float dt)
 { 
     const float speed = 5.0f;
@@ -89,6 +91,7 @@ VisualizerScene::VisualizerScene()
 {
     mainCamera.setName("main-camera");
     logger = Logger("VisualizerScene");
+    host = this;
 }
 
 VisualizerScene::~VisualizerScene()
@@ -101,18 +104,12 @@ void VisualizerScene::init()
     framebuffer.init(windowSize.x, windowSize.y);
 
     phongShader.init();
-    PhongMaterial material;
-    material.diffuse = glm::vec3(0.0f);
-    material.specular = glm::vec3(1.0f);
-    material.roughnessToShininess(0.23f);
-    phongShader.setMaterial(material);
 
     compositor.init();
 
     mainCamera.getTransform().position.z = -2.0f;
 
-    initObjects();
-    initLights();
+    initFromLua();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -190,9 +187,115 @@ LightObject& VisualizerScene::getLight(const std::string& name)
     return static_cast<LightObject&>(lights[name].get()[0]);
 }
 
-void VisualizerScene::initObjects()
+void VisualizerScene::initFromLua()
 {
-    VertexFormat vtxFmt;
+    // Create a new Lua state
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    lua_openSceneLib(L);
+
+    // Load and execute the Lua script
+    int result = luaL_dofile(L, "res/scene.lua");
+
+    // Check for errors
+    if (result != LUA_OK)
+    {
+        const char* errorMsg = lua_tostring(L, -1);
+        logger.errorf("Failed to run Lua script: %s", errorMsg);
+    }
+
+    logger.infof("Lua script executed successfully");
+
+    lua_getglobal(L, "Objects");
+    if(lua_istable(L, -1)) {
+        lua_pushnil(L);
+        int nObjs = 0;
+        while(lua_next(L, -2) != 0) {
+            nObjs++;
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+        logger.infof("There are %d objects", nObjs);
+    }
+
+    // Close the Lua state
+    lua_close(L);
+}
+
+void VisualizerScene::destroyObjectsAndLights()
+{
+    objects.clear();
+    lights.clear();
+}
+
+// Lua scene library functions
+
+int VisualizerScene::lua_openSceneLib(lua_State* L)
+{
+    static const luaL_Reg sceneLib[] =
+    {
+        {"getHost", lua_getHost},
+        {"createLight", lua_createLight},
+        {"createObject", lua_createObject},
+        {nullptr, nullptr}
+    };
+
+    luaL_newlib(L, sceneLib);
+    lua_setglobal(L, "scene");
+
+    return 0;
+}
+
+int VisualizerScene::lua_getHost(lua_State* L)
+{
+    lua_pushlightuserdata(L, host);
+
+    return 1;
+}
+
+int VisualizerScene::lua_createLight(lua_State* L)
+{
+    int numArgs = lua_gettop(L);
+    if (numArgs != 4)
+        return luaL_error(L, "Expected 4 arguments, got %d", numArgs);
+
+    const char* name = nullptr;
+    glm::vec3 position;
+    glm::vec3 color;
+    float intensity;
+
+    luaGet(name, const char*, string, 1);
+    luaGetVec3(position, 2);
+    luaGetVec3(color, 3);
+    luaGet(intensity, float, number, 4);
+
+    LightObject& light = host->createLight(name);
+    light.getTransform().position = position;
+    light.setColor(color);
+    light.setIntensity(intensity);
+
+    lua_pushlightuserdata(L, &light);
+
+    return 1;
+}
+
+int VisualizerScene::lua_createObject(lua_State* L)
+{
+    int error = 0;
+    int numArgs = lua_gettop(L);
+    if (numArgs != 3)
+        return luaL_error(L, "Expected 3 arguments, got %d", numArgs);
+
+    const char* name = nullptr;
+    const char* meshPath = nullptr;
+    PhongMaterial material;
+
+    luaGet(name, const char*, string, 1);
+    luaGet(meshPath, const char*, string, 2);
+    if((error = PhongMaterial::fromLua(L, 3, material)) != 0)
+        return error;
+
+    VertexFormat vtxFmt; 
 
     vtxFmt.size = 3;
     vtxFmt[0].data = EMVF_ATTRB_USAGE_POS |
@@ -208,48 +311,13 @@ void VisualizerScene::initObjects()
                      EMVF_ATTRB_SIZE(3) |
                      EMVF_ATTRB_NORMALIZED_FALSE;
 
-    MeshObject& sare = createObject<MeshObject>("sare");
-    Mesh::Ptr sareMesh = Mesh::load("res/sare.obj")[0];
-    sareMesh->makeRenderable(vtxFmt);
-    sare.setMesh(sareMesh);
+    MeshObject& object = host->createObject<MeshObject>(name);
+    Mesh::Ptr mesh = Mesh::load(meshPath)[0];
+    mesh->makeRenderable(vtxFmt);
+    object.setMesh(mesh);
+    object.setMaterial(material);
 
-    MeshObject& planet = createObject<MeshObject>("planet");
-    Mesh::Ptr planetMesh = Mesh::load("res/planet.obj")[0];
-    planetMesh->makeRenderable(vtxFmt);
-    planet.setMesh(planetMesh);
+    lua_pushlightuserdata(L, &object);
 
-    MeshObject& ring = createObject<MeshObject>("ring");
-    Mesh::Ptr ringMesh = Mesh::load("res/ring.obj")[0];
-    ringMesh->makeRenderable(vtxFmt);
-    ring.setMesh(ringMesh);
-
-    MeshObject& backdrop = createObject<MeshObject>("backdrop");
-    Mesh::Ptr backdropMesh = Mesh::load("res/backdrop.obj")[0];
-    backdropMesh->makeRenderable(vtxFmt);
-    
-    backdrop.setMesh(backdropMesh);
-}
-
-void VisualizerScene::initLights()
-{
-    LightObject& cyan = createLight("cyan");
-    cyan.getTransform().position = glm::vec3(-3.0f, 5.0f, 4.0f);
-    cyan.setColor(glm::vec3(0.0f, 0.86f, 1.0f));
-    cyan.setIntensity(3.0f);
-
-    LightObject& magenta = createLight("magenta");
-    magenta.getTransform().position = glm::vec3(3.0f, 5.0f, -4.0f);
-    magenta.setColor(glm::vec3(1.0f, 0.0f, 0.77f));
-    magenta.setIntensity(3.0f);
-
-    LightObject& fore = createLight("fore");
-    fore.getTransform().position = glm::vec3(0.0f, 4.0f, 0.0f);
-    fore.setColor(glm::vec3(1.0f, 1.0f, 1.0f));
-    fore.setIntensity(0.1f);
-}
-
-void VisualizerScene::destroyObjectsAndLights()
-{
-    objects.clear();
-    lights.clear();
+    return 1;
 }

@@ -18,6 +18,8 @@ set(ASSIMP_INSTALL            OFF CACHE BOOL " " FORCE)
 set(BUILD_SHARED_LIBS         OFF CACHE BOOL " " FORCE)
 add_subdirectory("dep/assimp")
 
+add_subdirectory("dep/lua")
+
 add_executable(${PROJECT_NAME}
   src/main.cpp
   src/Visualizer.cpp
@@ -50,6 +52,7 @@ target_link_libraries(${PROJECT_NAME}
   glad
   glm
   assimp
+  lua
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

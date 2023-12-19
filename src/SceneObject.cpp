@@ -75,19 +75,14 @@ glm::quat Transform::getRotationQuaternion() const
 }
 
 #define luaGetTransform() \
-    int error; \
     Transform* transform; \
-    if((error = lua_getTransform(L, &transform)) != 0) \
-        return error;
+    luaGetPointer(transform, Transform, 1);
 
 int Transform::lua_this(lua_State* L)
 {
-    lua_newtable(L);
-    lua_pushstring(L, "ptr");
     lua_pushlightuserdata(L, this);
-    lua_settable(L, -3);
 
-    lua_getglobal(L, "Transform");
+    luaL_newmetatable(L, "Transform");
     lua_setmetatable(L, -2);
 
     return 1;
@@ -112,22 +107,14 @@ int Transform::lua_openTransformLib(lua_State* L)
         {nullptr, nullptr}
     };
 
-    luaL_newlib(L, transformLib);
-    lua_setglobal(L, "Transform");
+    luaL_newmetatable(L, "Transform");
+    luaL_setfuncs(L, transformLib, 0);
 
-    lua_getglobal(L, "Transform");
     lua_pushstring(L, "__index");
-    lua_getglobal(L, "Transform");
+    lua_pushvalue(L, -2);
     lua_settable(L, -3);
-    lua_pop(L, 1);
 
-    return 0;
-}
-
-int Transform::lua_getTransform(lua_State* L, Transform** transform)
-{
-    luaPushValueFromKey("ptr", 1);
-    luaGet(*transform, Transform*, userdata, -1);
+    lua_setglobal(L, "Transform");
 
     return 0;
 }

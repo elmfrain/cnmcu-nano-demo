@@ -44,8 +44,6 @@ namespace em
         int lua_this(lua_State* L);
         static int lua_openTransformLib(lua_State* L);
     private:
-        static int lua_getTransform(lua_State* L, Transform** transform);
-
         static int lua_getPosition(lua_State* L);
         static int lua_getRotationEuler(lua_State* L);
         static int lua_getRotationQuaternion(lua_State* L);

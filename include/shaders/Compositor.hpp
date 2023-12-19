@@ -49,7 +49,6 @@ namespace em
         static const char* fragmentShaderSource;
         static Logger m_logger;
 
-        static int lua_getCompositor(lua_State* L, Compositor** compositor);
         static int lua_setGamma(lua_State* L);
         static int lua_setExposure(lua_State* L);
         static int lua_getGamma(lua_State* L);

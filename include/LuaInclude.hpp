@@ -80,3 +80,48 @@ static bool luaHasKeyValue(lua_State* L, const char* key, int index)
     lua_pop(L, 1);
     return hasKey;
 }
+
+template<typename T>
+int luaPushSharedPtr(lua_State* L, std::shared_ptr<T> ptr, const char* typeName) // typeName is used so that RTTI is not required
+{
+    std::shared_ptr<T>* userdata = static_cast<std::shared_ptr<T>*>(lua_newuserdata(L, sizeof(std::shared_ptr<T>)));
+    new(userdata) std::shared_ptr<T>(ptr);
+
+    luaL_newmetatable(L, typeName);
+    lua_pushstring(L, "__gc");
+    lua_pushcfunction(L, [](lua_State* L) -> int
+    {
+        std::shared_ptr<T>* userdata = static_cast<std::shared_ptr<T>*>(lua_touserdata(L, 1));
+        userdata->~shared_ptr();
+        return 0;
+    });
+    lua_settable(L, -3);
+
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
+template<typename T>
+int luaGetSharedPtr(lua_State* L, std::shared_ptr<T>& ptr, const char* typeName, int index = 1)
+{
+    if(!lua_isuserdata(L, index))
+        return luaL_error(L, "Expected userdata at index %d", index);
+
+    std::shared_ptr<T>* userdata = static_cast<std::shared_ptr<T>*>(lua_touserdata(L, index));
+    if(!userdata)
+        return luaL_error(L, "Expected userdata at index %d", index);
+
+    luaL_getmetatable(L, typeName);
+    if(!lua_getmetatable(L, index))
+        return luaL_error(L, "Expected userdata at index %d", index);
+
+    if(!lua_rawequal(L, -1, -2))
+        return luaL_error(L, "Expected userdata at index %d", index);
+
+    lua_pop(L, 2);
+
+    ptr = *userdata;
+
+    return 0;
+}

@@ -1,6 +1,8 @@
 #include <SceneObject.hpp>
 #include <cstring>
 
+#include <LightObject.hpp>
+
 using namespace em;
 
 Logger SceneObject::logger("SceneObject");
@@ -405,6 +407,8 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
     lua_getglobal(L, "SceneObject");
     lua_settable(L, -3);
     lua_pop(L, 1);
+
+    LightObject::lua_openLightObjectLib(L);
 
     return 0;
 }

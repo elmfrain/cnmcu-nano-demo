@@ -94,7 +94,7 @@ namespace em
         void removeChild(SceneObject& child);
         void addChild(SceneObject& child);
 
-        int lua_this(lua_State* L);
+        virtual int lua_this(lua_State* L);
         static int lua_openSceneObjectLib(lua_State* L);
     private:
         Type m_type;

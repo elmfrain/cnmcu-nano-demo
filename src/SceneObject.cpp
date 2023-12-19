@@ -2,6 +2,7 @@
 #include <cstring>
 
 #include <LightObject.hpp>
+#include <MeshObject.hpp>
 
 using namespace em;
 
@@ -409,6 +410,7 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
     lua_pop(L, 1);
 
     LightObject::lua_openLightObjectLib(L);
+    MeshObject::lua_openMeshObjectLib(L);
 
     return 0;
 }

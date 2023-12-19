@@ -274,6 +274,7 @@ int VisualizerScene::lua_openSceneLib(lua_State* L)
     };
 
     Compositor::lua_openCompositorLib(L);
+    SceneObject::lua_openSceneObjectLib(L);
 
     luaL_newlib(L, sceneLib);
     lua_setglobal(L, "scene");
@@ -297,25 +298,16 @@ int VisualizerScene::lua_getHost(lua_State* L)
 int VisualizerScene::lua_createLight(lua_State* L)
 {
     int numArgs = lua_gettop(L);
-    if (numArgs != 4)
-        return luaL_error(L, "Expected 4 arguments, got %d", numArgs);
+    if (numArgs != 1)
+        return luaL_error(L, "Expected 1 argument, got %d", numArgs);
 
     const char* name = nullptr;
-    glm::vec3 position;
-    glm::vec3 color;
-    float intensity;
 
     luaGet(name, const char*, string, 1);
-    luaGetVec3(position, 2);
-    luaGetVec3(color, 3);
-    luaGet(intensity, float, number, 4);
 
     LightObject& light = host->createLight(name);
-    light.getTransform().position = position;
-    light.setColor(color);
-    light.setIntensity(intensity);
 
-    lua_pushlightuserdata(L, &light);
+    light.lua_this(L);
 
     return 1;
 }

@@ -25,8 +25,6 @@ namespace em
         glm::vec3 color;
         float intensity;
 
-        static int lua_getLightObject(lua_State* L, LightObject** lightObject);
-
         static int lua_getColor(lua_State* L);
         static int lua_getIntensity(lua_State* L);
 

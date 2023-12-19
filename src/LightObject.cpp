@@ -42,10 +42,9 @@ float LightObject::getIntensity() const
 }
 
 #define luaGetLightObject() \
-    int error; \
     LightObject* lightObject; \
-    if ((error = lua_getLightObject(L, &lightObject)) != 0) \
-        return error; 
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(lightObject, LightObject, -1);
 
 int LightObject::lua_this(lua_State* L)
 {
@@ -57,7 +56,7 @@ int LightObject::lua_this(lua_State* L)
     getTransform().lua_this(L);
     lua_settable(L, -3);
 
-    lua_getglobal(L, "LightObject");
+    luaL_newmetatable(L, "LightObject");
     lua_setmetatable(L, -2);
 
     return 1;
@@ -74,24 +73,17 @@ int LightObject::lua_openLightObjectLib(lua_State* L)
         { NULL, NULL }
     };
 
-    luaL_newlib(L, lightObjectLib);
-    lua_setglobal(L, "LightObject");
+    luaL_newmetatable(L, "LightObject");
+    luaL_setfuncs(L, lightObjectLib, 0);
 
-    lua_getglobal(L, "LightObject");
     lua_pushstring(L, "__index");
-    lua_getglobal(L, "LightObject");
+    lua_pushvalue(L, -2);
     lua_settable(L, -3);
-    lua_getglobal(L, "SceneObject");
+
+    luaL_newmetatable(L, "SceneObject");
     lua_setmetatable(L, -2);
-    lua_pop(L, 1);
 
-    return 0;
-}
-
-int LightObject::lua_getLightObject(lua_State* L, LightObject** lightObject)
-{
-    luaPushValueFromKey("ptr", 1);
-    luaGet(*lightObject, LightObject*, userdata, -1);
+    lua_setglobal(L, "LightObject");
 
     return 0;
 }

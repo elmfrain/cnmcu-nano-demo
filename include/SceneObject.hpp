@@ -73,6 +73,8 @@ namespace em
             ROOT
         };
 
+        static const char* typeNames[];
+
         SceneObject(Type type, const std::string& name = "Object");
         virtual ~SceneObject();
 
@@ -91,6 +93,9 @@ namespace em
         void removeAllChildren();
         void removeChild(SceneObject& child);
         void addChild(SceneObject& child);
+
+        int lua_this(lua_State* L);
+        static int lua_openSceneObjectLib(lua_State* L);
     private:
         Type m_type;
         std::string m_name;
@@ -99,6 +104,16 @@ namespace em
 
         SceneObject* m_parent;
         std::forward_list<SceneObject*> m_children;
+
+        static int lua_getSceneObject(lua_State* L, SceneObject** object, int index = 1);
+
+        static int lua_getName(lua_State* L);
+
+        static int lua_removeAllChildren(lua_State* L);
+        static int lua_removeChild(lua_State* L);
+        static int lua_addChild(lua_State* L);
+
+        static int lua_setName(lua_State* L);
     protected:
         static std::unordered_map<std::string, SceneObject*>& getObjects();
         static const char* getRootName();

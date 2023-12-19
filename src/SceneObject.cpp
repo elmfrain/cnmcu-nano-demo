@@ -242,6 +242,15 @@ int Transform::lua_setRotationMode(lua_State* L)
 
 //----------------------------------------------------------------------------------------------
 
+const char* SceneObject::typeNames[] =
+{
+    "EMPTY",
+    "MESH",
+    "LIGHT",
+    "CAMERA",
+    "ROOT"
+};
+
 SceneObject::SceneObject(Type type, const std::string& name)
     : m_type(type)
     , m_parent(nullptr)
@@ -356,6 +365,112 @@ void SceneObject::addChild(SceneObject& child)
 
     // Add child to this object's children
     m_children.push_front(&child);
+}
+
+int SceneObject::lua_this(lua_State* L)
+{
+    lua_newtable(L);
+    lua_pushstring(L, "ptr");
+    lua_pushlightuserdata(L, this);
+    lua_settable(L, -3);
+    lua_pushstring(L, "transform");
+    m_transform.lua_this(L);
+    lua_settable(L, -3);
+
+    lua_getglobal(L, "SceneObject");
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
+int SceneObject::lua_openSceneObjectLib(lua_State* L)
+{
+    static const luaL_Reg sceneObjectLib[] =
+    {
+        {"getName", lua_getName},
+        {"setName", lua_setName},
+        {"removeAllChildren", lua_removeAllChildren},
+        {"removeChild", lua_removeChild},
+        {"addChild", lua_addChild},
+        {nullptr, nullptr}
+    };
+
+    Transform::lua_openTransformLib(L);
+
+    luaL_newlib(L, sceneObjectLib);
+    lua_setglobal(L, "SceneObject");
+
+    lua_getglobal(L, "SceneObject");
+    lua_pushstring(L, "__index");
+    lua_getglobal(L, "SceneObject");
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+
+    return 0;
+}
+
+#define luaGetSceneObject() \
+    int error; \
+    SceneObject* object; \
+    if((error = lua_getSceneObject(L, &object)) != 0) \
+        return error;
+
+int SceneObject::lua_getSceneObject(lua_State* L, SceneObject** object, int index)
+{
+    luaPushValueFromKey("ptr", index);
+    luaGet(*object, SceneObject*, userdata, -1);
+
+    return 0;
+}
+
+int SceneObject::lua_getName(lua_State* L)
+{
+    luaGetSceneObject();
+    lua_pushstring(L, object->getName().c_str());
+
+    return 1;
+}
+
+int SceneObject::lua_removeAllChildren(lua_State* L)
+{
+    luaGetSceneObject();
+    object->removeAllChildren();
+
+    return 0;
+}
+
+int SceneObject::lua_removeChild(lua_State* L)
+{
+    luaGetSceneObject();
+    SceneObject* child;
+    if(lua_getSceneObject(L, &child, 2) != 0)
+        return luaL_error(L, "Expected a SceneObject as the first argument");
+
+    object->removeChild(*child);
+
+    return 0;
+}
+
+int SceneObject::lua_addChild(lua_State* L)
+{
+    luaGetSceneObject();
+    SceneObject* child;
+    if(lua_getSceneObject(L, &child, 2) != 0)
+        return luaL_error(L, "Expected a SceneObject as the first argument");
+
+    object->addChild(*child);
+
+    return 0;
+}
+
+int SceneObject::lua_setName(lua_State* L)
+{
+    luaGetSceneObject();
+    const char* name = luaL_checkstring(L, 2);
+
+    object->setName(name);
+
+    return 0;
 }
 
 std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()

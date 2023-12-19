@@ -55,15 +55,18 @@ local lights = {
 }
 
 function Start()
-  scene.compositor:setGamma(2.2)
-  scene.compositor:setExposure(1)
+  scene.compositor:setGamma(1.6)
+  scene.compositor:setExposure(1.5)
 
   for key, value in pairs(objects) do
     scene.createObject(key, value.mesh, value.material)
   end
 
-  for key, value in pairs(lights) do
-    scene.createLight(key, value.position, value.color, value.intensity)
+  for name, value in pairs(lights) do
+    local light = scene.createLight(name)
+    light.transform:setPosition(value.position)
+    light:setColor(value.color)
+    light:setIntensity(value.intensity)
   end
 end
 

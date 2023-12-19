@@ -1,8 +1,20 @@
 #include <SceneObject.hpp>
+#include <cstring>
 
 using namespace em;
 
 Logger SceneObject::logger("SceneObject");
+
+const char* Transform::rotationModeNames[] =
+{
+    "EULER_XYZ",
+    "EULER_XZY",
+    "EULER_YXZ",
+    "EULER_YZX",
+    "EULER_ZXY",
+    "EULER_ZYX",
+    "QUATERNION"
+};
 
 Transform::Transform(const glm::vec3& position, const glm::vec3& scale)
     : position(position)
@@ -57,6 +69,169 @@ glm::quat Transform::getRotationQuaternion() const
     default:
         return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
     }
+}
+
+#define luaGetTransform() \
+    int error; \
+    Transform* transform; \
+    if((error = lua_getTransform(L, &transform)) != 0) \
+        return error;
+
+int Transform::lua_this(lua_State* L)
+{
+    lua_newtable(L);
+    lua_pushstring(L, "ptr");
+    lua_pushlightuserdata(L, this);
+    lua_settable(L, -3);
+
+    lua_getglobal(L, "Transform");
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
+int Transform::lua_openTransformLib(lua_State* L)
+{
+    static const luaL_Reg transformLib[] =
+    {
+        {"getPosition", lua_getPosition},
+        {"getRotationEuler", lua_getRotationEuler},
+        {"getRotationQuaternion", lua_getRotationQuaternion},
+        {"getScale", lua_getScale},
+        {"getOffset", lua_getOffset},
+        {"getRotationMode", lua_getRotationMode},
+        {"setPosition", lua_setPosition},
+        {"setRotationEuler", lua_setRotationEuler},
+        {"setRotationQuaternion", lua_setRotationQuaternion},
+        {"setScale", lua_setScale},
+        {"setOffset", lua_setOffset},
+        {"setRotationMode", lua_setRotationMode},
+        {nullptr, nullptr}
+    };
+
+    luaL_newlib(L, transformLib);
+    lua_setglobal(L, "Transform");
+
+    lua_getglobal(L, "Transform");
+    lua_pushstring(L, "__index");
+    lua_getglobal(L, "Transform");
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+
+    return 0;
+}
+
+int Transform::lua_getTransform(lua_State* L, Transform** transform)
+{
+    luaPushValueFromKey("ptr", 1);
+    luaGet(*transform, Transform*, userdata, -1);
+
+    return 0;
+}
+
+int Transform::lua_getPosition(lua_State* L)
+{
+    luaGetTransform();
+    luaPushVec3(transform->position);
+
+    return 1;
+}
+
+int Transform::lua_getRotationEuler(lua_State* L)
+{
+    luaGetTransform();
+    luaPushVec3(transform->rotationEuler);
+
+    return 1;
+}
+
+int Transform::lua_getRotationQuaternion(lua_State* L)
+{
+    luaGetTransform();
+    luaPushVec4(transform->rotationQuaternion);
+
+    return 1;
+}
+
+int Transform::lua_getScale(lua_State* L)
+{
+    luaGetTransform();
+    luaPushVec3(transform->scale);
+
+    return 1;
+}
+
+int Transform::lua_getOffset(lua_State* L)
+{
+    luaGetTransform();
+    luaPushVec3(transform->offset);
+
+    return 1;
+}
+
+int Transform::lua_getRotationMode(lua_State* L)
+{
+    luaGetTransform();
+    lua_pushstring(L, rotationModeNames[transform->rotationMode]);
+
+    return 1;
+}
+
+int Transform::lua_setPosition(lua_State* L)
+{
+    luaGetTransform();
+    luaGetVec3(transform->position, 2);
+
+    return 0;
+}
+
+int Transform::lua_setRotationEuler(lua_State* L)
+{
+    luaGetTransform();
+    luaGetVec3(transform->rotationEuler, 2);
+
+    return 0;
+}
+
+int Transform::lua_setRotationQuaternion(lua_State* L)
+{
+    luaGetTransform();
+    luaGetVec4(transform->rotationQuaternion, 2);
+
+    return 0;
+}
+
+int Transform::lua_setScale(lua_State* L)
+{
+    luaGetTransform();
+    luaGetVec3(transform->scale, 2);
+
+    return 0;
+}
+
+int Transform::lua_setOffset(lua_State* L)
+{
+    luaGetTransform();
+    luaGetVec3(transform->offset, 2);
+
+    return 0;
+}
+
+int Transform::lua_setRotationMode(lua_State* L)
+{
+    luaGetTransform();
+    const char* rotationModeName = luaL_checkstring(L, 2);
+
+    for(int i = 0; i < 7; i++)
+    {
+        if(strcmp(rotationModeName, rotationModeNames[i]) == 0)
+        {
+            transform->rotationMode = (RotationMode)i;
+            return 0;
+        }
+    }
+
+    return luaL_error(L, "Invalid rotation mode %s", rotationModeName);
 }
 
 SceneObject::SceneObject(Type type, const std::string& name)

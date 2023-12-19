@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <shaders/Shader.hpp>
+#include <LuaInclude.hpp>
 
 #include "Logger.hpp"
 
@@ -15,7 +16,7 @@ namespace em
     {
         enum RotationMode
         {
-            EULER_XYZ,
+            EULER_XYZ = 0,
             EULER_XZY,
             EULER_YXZ,
             EULER_YZX,
@@ -23,6 +24,8 @@ namespace em
             EULER_ZYX,
             QUATERNION
         };
+
+        static const char* rotationModeNames[];
 
         glm::vec3 position;
         glm::vec3 rotationEuler;
@@ -37,6 +40,25 @@ namespace em
         glm::mat4 getMatrix() const;
         glm::mat4 getInverseMatrix() const;
         glm::quat getRotationQuaternion() const;
+
+        int lua_this(lua_State* L);
+        static int lua_openTransformLib(lua_State* L);
+    private:
+        static int lua_getTransform(lua_State* L, Transform** transform);
+
+        static int lua_getPosition(lua_State* L);
+        static int lua_getRotationEuler(lua_State* L);
+        static int lua_getRotationQuaternion(lua_State* L);
+        static int lua_getScale(lua_State* L);
+        static int lua_getOffset(lua_State* L);
+        static int lua_getRotationMode(lua_State* L);
+
+        static int lua_setPosition(lua_State* L);
+        static int lua_setRotationEuler(lua_State* L);
+        static int lua_setRotationQuaternion(lua_State* L);
+        static int lua_setScale(lua_State* L);
+        static int lua_setOffset(lua_State* L);
+        static int lua_setRotationMode(lua_State* L);
     };
 
     class SceneObject

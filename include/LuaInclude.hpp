@@ -7,6 +7,8 @@ extern "C"
 #include <lauxlib.h>
 }
 
+#include <memory>
+
 #define luaGet(var, varType, type, index) \
     if(!lua_is##type(L, index)) \
         return luaL_error(L, "Expected " #type " at index %d", index); \

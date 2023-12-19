@@ -64,10 +64,8 @@ PhongMaterial MeshObject::getMaterial() const
 }
 
 #define luaGetMeshObject() \
-    int error; \
     MeshObject* meshObject; \
-    if((error = lua_getMeshObject(L, &meshObject)) != 0) \
-        return error;
+    luaGetPointer(meshObject, MeshObject, 1);
 
 int MeshObject::lua_this(lua_State* L)
 {
@@ -78,8 +76,11 @@ int MeshObject::lua_this(lua_State* L)
     lua_pushstring(L, "transform");
     getTransform().lua_this(L);
     lua_settable(L, -3);
+    lua_pushstring(L, "material");
+    material.lua_this(L);
+    lua_settable(L, -3);
 
-    lua_getglobal(L, "MeshObject");
+    luaL_newmetatable(L, "MeshObject");
     lua_setmetatable(L, -2);
 
     return 1;
@@ -93,24 +94,17 @@ int MeshObject::lua_openMeshObjectLib(lua_State* L)
         { nullptr, nullptr }
     };
 
-    luaL_newlib(L, meshObjectLib);
-    lua_setglobal(L, "MeshObject");
+    luaL_newmetatable(L, "MeshObject");
+    luaL_setfuncs(L, meshObjectLib, 0);
 
-    lua_getglobal(L, "MeshObject");
     lua_pushstring(L, "__index");
-    lua_getglobal(L, "MeshObject");
+    lua_pushvalue(L, -2);
     lua_settable(L, -3);
-    lua_getglobal(L, "SceneObject");
+
+    luaL_newmetatable(L, "SceneObject");
     lua_setmetatable(L, -2);
-    lua_pop(L, 1);
 
-    return 0;
-}
-
-int MeshObject::lua_getMeshObject(lua_State* L, MeshObject** meshObject)
-{
-    luaPushValueFromKey("ptr", 1);
-    luaGet(*meshObject, MeshObject*, userdata, -1);
+    lua_setglobal(L, "MeshObject");
 
     return 0;
 }

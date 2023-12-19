@@ -27,8 +27,6 @@ namespace em
         Mesh::Ptr mesh;
         PhongMaterial material;
 
-        static int lua_getMeshObject(lua_State* L, MeshObject** meshObject);
-
         static int lua_getMesh(lua_State* L);
 
         static int lua_setMesh(lua_State* L);

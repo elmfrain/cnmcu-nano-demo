@@ -19,6 +19,24 @@ namespace em
             shininess = 1.0f / (roughness * roughness);
         }
 
+        int lua_this(lua_State* L);
+        static int lua_openPhongMaterialLib(lua_State* L);
+
+    private:
+        static int lua_getPhongMaterial(lua_State* L, PhongMaterial** material);
+
+        static int lua_getAmbient(lua_State* L);
+        static int lua_getDiffuse(lua_State* L);
+        static int lua_getSpecular(lua_State* L);
+        static int lua_getShininess(lua_State* L);
+        static int lua_getRoughness(lua_State* L);
+
+        static int lua_setAmbient(lua_State* L);
+        static int lua_setDiffuse(lua_State* L);
+        static int lua_setSpecular(lua_State* L);
+        static int lua_setShininess(lua_State* L);
+        static int lua_setRoughness(lua_State* L);
+    public:
         static int fromLua(lua_State* L, int index, PhongMaterial& material)
         {
             if(luaHasKeyValue(L, "ambient", index))

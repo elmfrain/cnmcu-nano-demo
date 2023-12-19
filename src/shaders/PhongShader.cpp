@@ -2,6 +2,167 @@
 
 using namespace em;
 
+#define luaGetPhongMaterial() \
+    int error; \
+    PhongMaterial* material; \
+    if((error = lua_getPhongMaterial(L, &material)) != 0) \
+        return error;
+
+int PhongMaterial::lua_this(lua_State* L)
+{
+    lua_newtable(L);
+    lua_pushstring(L, "ptr");
+    lua_pushlightuserdata(L, this);
+    lua_settable(L, -3);
+
+    lua_getglobal(L, "PhongMaterial");
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
+int PhongMaterial::lua_openPhongMaterialLib(lua_State* L)
+{
+    static const luaL_Reg phongMaterialLib[] =
+    {
+        {"getAmbient", lua_getAmbient},
+        {"getDiffuse", lua_getDiffuse},
+        {"getSpecular", lua_getSpecular},
+        {"getShininess", lua_getShininess},
+        {"getRoughness", lua_getRoughness},
+        {"setAmbient", lua_setAmbient},
+        {"setDiffuse", lua_setDiffuse},
+        {"setSpecular", lua_setSpecular},
+        {"setShininess", lua_setShininess},
+        {"setRoughness", lua_setRoughness},
+        {nullptr, nullptr}
+    };
+
+    luaL_newlib(L, phongMaterialLib);
+    lua_setglobal(L, "PhongMaterial");
+
+    lua_getglobal(L, "PhongMaterial");
+    lua_pushstring(L, "__index");
+    lua_getglobal(L, "PhongMaterial");
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+
+    return 0;
+}
+
+int PhongMaterial::lua_getPhongMaterial(lua_State* L, PhongMaterial** material)
+{
+    luaPushValueFromKey("ptr", 1);
+    luaGet(*material, PhongMaterial*, userdata, -1);
+
+    return 0;
+}
+
+int PhongMaterial::lua_getAmbient(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    luaPushVec3(material->ambient);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getDiffuse(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    luaPushVec3(material->diffuse);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getSpecular(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    luaPushVec3(material->specular);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getShininess(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    lua_pushnumber(L, material->shininess);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getRoughness(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    lua_pushnumber(L, glm::sqrt(1.0f / material->shininess));
+
+    return 1;
+}
+
+int PhongMaterial::lua_setAmbient(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    glm::vec3 ambient;
+    luaGetVec3(ambient, 2);
+
+    material->ambient = ambient;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setDiffuse(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    glm::vec3 diffuse;
+    luaGetVec3(diffuse, 2);
+
+    material->diffuse = diffuse;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setSpecular(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    glm::vec3 specular;
+    luaGetVec3(specular, 2);
+
+    material->specular = specular;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setShininess(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    float shininess;
+    luaGet(shininess, float, number, 2);
+
+    material->shininess = shininess;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setRoughness(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    float roughness;
+    luaGet(roughness, float, number, 2);
+
+    material->roughnessToShininess(roughness);
+
+    return 0;
+}
+
 const char* PhongShader::m_vertexShaderSource =
     "#version 330 core\n"
     "layout(location = 0) in vec3 inPos;\n"

@@ -54,14 +54,19 @@ local lights = {
   }
 }
 
-local host = scene.getHost()
+function Start()
+  scene.compositor:setGamma(2.2)
+  scene.compositor:setExposure(1)
 
-print(host)
+  for key, value in pairs(objects) do
+    scene.createObject(key, value.mesh, value.material)
+  end
 
-for key, value in pairs(objects) do
-  scene.createObject(key, value.mesh, value.material)
+  for key, value in pairs(lights) do
+    scene.createLight(key, value.position, value.color, value.intensity)
+  end
 end
 
-for key, value in pairs(lights) do
-  scene.createLight(key, value.position, value.color, value.intensity)
+function Update(dt)
+  
 end

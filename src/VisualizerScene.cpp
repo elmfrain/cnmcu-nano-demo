@@ -109,6 +109,7 @@ void VisualizerScene::init()
 
     mainCamera.getTransform().position.z = -2.0f;
 
+    initLua();
     initFromLua();
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -122,7 +123,11 @@ void VisualizerScene::init()
 
 void VisualizerScene::reload()
 {
+    logger.infof("Reloading scene");
+
     destroyObjectsAndLights();
+    destroyLua();
+    initLua();
     initFromLua();
 }
 
@@ -130,6 +135,7 @@ void VisualizerScene::update(float dt)
 {
     moveCamera(mainCamera, dt);
     rotateCamera(mainCamera, dt);
+    updateFromLua(dt);
 }
 
 void VisualizerScene::draw()
@@ -170,6 +176,8 @@ void VisualizerScene::destroy()
 
     compositor.destroy();
 
+    destroyLua();
+
     destroyObjectsAndLights();
 }
 
@@ -193,10 +201,10 @@ LightObject& VisualizerScene::getLight(const std::string& name)
     return static_cast<LightObject&>(lights[name].get()[0]);
 }
 
-void VisualizerScene::initFromLua()
+void VisualizerScene::initLua()
 {
     // Create a new Lua state
-    lua_State* L = luaL_newstate();
+    L = luaL_newstate();
     luaL_openlibs(L);
     lua_openSceneLib(L);
 
@@ -210,28 +218,47 @@ void VisualizerScene::initFromLua()
         logger.errorf("Failed to run Lua script: %s", errorMsg);
     }
 
+    lua_getglobal(L, "Start");
+    if(!lua_isfunction(L, -1))
+        logger.warnf("Lua script does not have a Start function");
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "Update");
+    if(!lua_isfunction(L, -1))
+        logger.warnf("Lua script does not have an Update function");
+    lua_pop(L, 1);
+
     logger.infof("Lua script executed successfully");
+}
 
-    lua_getglobal(L, "Objects");
-    if(lua_istable(L, -1)) {
-        lua_pushnil(L);
-        int nObjs = 0;
-        while(lua_next(L, -2) != 0) {
-            nObjs++;
-            lua_pop(L, 1);
-        }
-        lua_pop(L, 1);
-        logger.infof("There are %d objects", nObjs);
-    }
+void VisualizerScene::initFromLua()
+{
+    lua_getglobal(L, "Start");
+    if(!lua_isfunction(L, -1))
+        return lua_pop(L, 1);
 
-    // Close the Lua state
-    lua_close(L);
+    lua_call(L, 0, 0);
+}
+
+void VisualizerScene::updateFromLua(float dt)
+{
+    lua_getglobal(L, "Update");
+    if(!lua_isfunction(L, -1))
+        return lua_pop(L, 1);
+
+    lua_pushnumber(L, dt);
+    lua_call(L, 1, 0);
 }
 
 void VisualizerScene::destroyObjectsAndLights()
 {
     objects.clear();
     lights.clear();
+}
+
+void VisualizerScene::destroyLua()
+{
+    lua_close(L);
 }
 
 // Lua scene library functions
@@ -246,8 +273,16 @@ int VisualizerScene::lua_openSceneLib(lua_State* L)
         {nullptr, nullptr}
     };
 
+    Compositor::lua_openCompositorLib(L);
+
     luaL_newlib(L, sceneLib);
     lua_setglobal(L, "scene");
+
+    lua_getglobal(L, "scene");
+    lua_pushstring(L, "compositor");
+    host->compositor.lua_this(L);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
 
     return 0;
 }

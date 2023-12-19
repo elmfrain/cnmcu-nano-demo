@@ -16,6 +16,13 @@ extern "C"
     if(index < 0) \
         lua_pop(L, 1);
 
+#define luaGetPointer(var, varType, index) \
+    if(!lua_islightuserdata(L, index)) \
+        return luaL_error(L, "Expected light userdata at index %d", index); \
+    var = static_cast<varType*>(lua_touserdata(L, index)); \
+    if(index < 0) \
+        lua_pop(L, 1);
+
 #define luaGetVec3(var, index) \
     if(!lua_istable(L, index)) \
         return luaL_error(L, "Expected table at index %d", index); \

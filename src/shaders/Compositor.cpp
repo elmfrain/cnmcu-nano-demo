@@ -135,10 +135,6 @@ float Compositor::getExposure() const
 int Compositor::lua_this(lua_State* L)
 {
     lua_pushlightuserdata(L, this);
-    // lua_newtable(L);
-    // lua_pushstring(L, "ptr");
-    // lua_pushlightuserdata(L, this);
-    // lua_settable(L, -3);
 
     luaL_newmetatable(L, "Compositor");
     lua_setmetatable(L, -2);
@@ -165,14 +161,6 @@ int Compositor::lua_openCompositorLib(lua_State* L)
     lua_settable(L, -3);
 
     lua_setglobal(L, "Compositor");
-    // luaL_newlib(L, compositorLib);
-    // lua_setglobal(L, "Compositor");
-
-    // lua_getglobal(L, "Compositor");
-    // lua_pushstring(L, "__index");
-    // lua_getglobal(L, "Compositor");
-    // lua_settable(L, -3);
-    // lua_pop(L, 1);
 
     return 0;
 }

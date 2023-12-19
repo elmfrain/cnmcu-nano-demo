@@ -132,6 +132,42 @@ float Compositor::getExposure() const
     return m_exposure;
 }
 
+int Compositor::lua_this(lua_State* L)
+{
+    lua_newtable(L);
+    lua_pushstring(L, "ptr");
+    lua_pushlightuserdata(L, this);
+    lua_settable(L, -3);
+
+    lua_getglobal(L, "Compositor");
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
+int Compositor::lua_openCompositorLib(lua_State* L)
+{
+    static const luaL_Reg compositorLib[] =
+    {
+        {"setGamma", lua_setGamma},
+        {"setExposure", lua_setExposure},
+        {"getGamma", lua_getGamma},
+        {"getExposure", lua_getExposure},
+        {nullptr, nullptr}
+    };
+
+    luaL_newlib(L, compositorLib);
+    lua_setglobal(L, "Compositor");
+
+    lua_getglobal(L, "Compositor");
+    lua_pushstring(L, "__index");
+    lua_getglobal(L, "Compositor");
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+
+    return 0;
+}
+
 GLuint Compositor::generateShaderProgram()
 {
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -193,4 +229,62 @@ void Compositor::updateUniforms(Framebuffer& framebuffer)
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, framebuffer.getTexture());
     glUniform1i(m_textureUniformLoc, 0);
+}
+
+int Compositor::lua_getCompositor(lua_State* L, Compositor** compositor)
+{
+    luaPushValueFromKey("ptr", 1);
+    luaGet(*compositor, Compositor*, userdata, -1);
+
+    return 0;
+}
+
+int Compositor::lua_setGamma(lua_State* L)
+{
+    int error;
+    Compositor* compositor;
+    if((error = lua_getCompositor(L, &compositor)) != 0) return error;
+
+    float gamma;
+    luaGet(gamma, float, number, 2);
+
+    compositor->setGamma(gamma);
+
+    return 0;
+}
+
+int Compositor::lua_setExposure(lua_State* L)
+{
+    int error;
+    Compositor* compositor;
+    if((error = lua_getCompositor(L, &compositor)) != 0) return error;
+
+    float exposure;
+    luaGet(exposure, float, number, 2);
+
+    compositor->setExposure(exposure);
+
+    return 0;
+}
+
+int Compositor::lua_getGamma(lua_State* L)
+{
+    int error;
+    Compositor* compositor;
+    if((error = lua_getCompositor(L, &compositor)) != 0) return error;
+
+    lua_pushnumber(L, compositor->m_gamma);
+
+    return 1;
+}
+
+int Compositor::lua_getExposure(lua_State* L)
+{
+    int error;
+    Compositor* compositor;
+    if((error = lua_getCompositor(L, &compositor)) != 0) return error;
+
+    lua_pushnumber(L, compositor->m_exposure);
+
+    return 1;
 }

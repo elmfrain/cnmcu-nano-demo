@@ -4,6 +4,7 @@
 #include <Framebuffer.hpp>
 #include <Logger.hpp>
 #include <memory>
+#include <LuaInclude.hpp>
 
 namespace em
 {
@@ -22,6 +23,10 @@ namespace em
 
         float getGamma() const;
         float getExposure() const;
+
+        int lua_this(lua_State* L);
+
+        static int lua_openCompositorLib(lua_State* L);
     private:
         std::unique_ptr<MeshBuilder> m_meshBuilder;
 
@@ -43,5 +48,11 @@ namespace em
         static const char* vertexShaderSource;
         static const char* fragmentShaderSource;
         static Logger m_logger;
+
+        static int lua_getCompositor(lua_State* L, Compositor** compositor);
+        static int lua_setGamma(lua_State* L);
+        static int lua_setExposure(lua_State* L);
+        static int lua_getGamma(lua_State* L);
+        static int lua_getExposure(lua_State* L);
     };
 }

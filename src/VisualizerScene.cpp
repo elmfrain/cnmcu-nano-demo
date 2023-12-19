@@ -270,6 +270,7 @@ int VisualizerScene::lua_openSceneLib(lua_State* L)
         {"getHost", lua_getHost},
         {"createLight", lua_createLight},
         {"createObject", lua_createObject},
+        {"loadMeshes", lua_loadMeshes},
         {nullptr, nullptr}
     };
 
@@ -351,6 +352,30 @@ int VisualizerScene::lua_createObject(lua_State* L)
     object.setMaterial(material);
 
     lua_pushlightuserdata(L, &object);
+
+    return 1;
+}
+
+int VisualizerScene::lua_loadMeshes(lua_State* L)
+{
+    int error = 0;
+    int numArgs = lua_gettop(L);
+    if (numArgs != 1)
+        return luaL_error(L, "Expected 1 argument, got %d", numArgs);
+
+    const char* path = nullptr;
+
+    luaGet(path, const char*, string, 1);
+
+    std::vector<Mesh::Ptr> meshes = Mesh::load(path);
+
+    lua_newtable(L);
+    for(int i = 0; i < meshes.size(); ++i)
+    {
+        lua_pushinteger(L, i + 1);
+        luaPushSharedPtr<Mesh>(L, meshes[i], "MeshPtr");
+        lua_settable(L, -3);
+    }
 
     return 1;
 }

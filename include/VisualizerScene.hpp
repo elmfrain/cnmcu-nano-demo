@@ -64,5 +64,6 @@ namespace em
         static int lua_getHost(lua_State* L);
         static int lua_createLight(lua_State* L);
         static int lua_createObject(lua_State* L);
+        static int lua_loadMeshes(lua_State* L);
     };
 }

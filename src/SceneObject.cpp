@@ -367,7 +367,7 @@ int SceneObject::lua_this(lua_State* L)
     m_transform.lua_this(L);
     lua_settable(L, -3);
 
-    lua_getglobal(L, "SceneObject");
+    luaL_newmetatable(L, "SceneObject");
     lua_setmetatable(L, -2);
 
     return 1;
@@ -387,14 +387,14 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
 
     Transform::lua_openTransformLib(L);
 
-    luaL_newlib(L, sceneObjectLib);
-    lua_setglobal(L, "SceneObject");
+    luaL_newmetatable(L, "SceneObject");
+    luaL_setfuncs(L, sceneObjectLib, 0);
 
-    lua_getglobal(L, "SceneObject");
     lua_pushstring(L, "__index");
-    lua_getglobal(L, "SceneObject");
+    lua_pushvalue(L, -2);
     lua_settable(L, -3);
-    lua_pop(L, 1);
+
+    lua_setglobal(L, "SceneObject");
 
     LightObject::lua_openLightObjectLib(L);
     MeshObject::lua_openMeshObjectLib(L);
@@ -403,18 +403,9 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
 }
 
 #define luaGetSceneObject() \
-    int error; \
     SceneObject* object; \
-    if((error = lua_getSceneObject(L, &object)) != 0) \
-        return error;
-
-int SceneObject::lua_getSceneObject(lua_State* L, SceneObject** object, int index)
-{
-    luaPushValueFromKey("ptr", index);
-    luaGet(*object, SceneObject*, userdata, -1);
-
-    return 0;
-}
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(object, SceneObject, -1);
 
 int SceneObject::lua_getName(lua_State* L)
 {
@@ -436,8 +427,7 @@ int SceneObject::lua_removeChild(lua_State* L)
 {
     luaGetSceneObject();
     SceneObject* child;
-    if(lua_getSceneObject(L, &child, 2) != 0)
-        return luaL_error(L, "Expected a SceneObject as the first argument");
+    luaGetPointer(child, SceneObject, 2);
 
     object->removeChild(*child);
 
@@ -448,8 +438,7 @@ int SceneObject::lua_addChild(lua_State* L)
 {
     luaGetSceneObject();
     SceneObject* child;
-    if(lua_getSceneObject(L, &child, 2) != 0)
-        return luaL_error(L, "Expected a SceneObject as the first argument");
+    luaGetPointer(child, SceneObject, 2);
 
     object->addChild(*child);
 

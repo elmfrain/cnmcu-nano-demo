@@ -103,8 +103,6 @@ namespace em
         SceneObject* m_parent;
         std::forward_list<SceneObject*> m_children;
 
-        static int lua_getSceneObject(lua_State* L, SceneObject** object, int index = 1);
-
         static int lua_getName(lua_State* L);
 
         static int lua_removeAllChildren(lua_State* L);

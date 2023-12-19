@@ -29,6 +29,15 @@ extern "C"
     if(index < 0) \
         lua_pop(L, 1);
 
+#define luaPushVec3(var) \
+    lua_newtable(L); \
+    lua_pushnumber(L, var.x); \
+    lua_rawseti(L, -2, 1); \
+    lua_pushnumber(L, var.y); \
+    lua_rawseti(L, -2, 2); \
+    lua_pushnumber(L, var.z); \
+    lua_rawseti(L, -2, 3);
+
 #define luaPushValueFromKey(key, index) \
     lua_pushstring(L, key); \
     lua_gettable(L, index); \

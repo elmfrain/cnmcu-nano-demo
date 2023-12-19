@@ -23,8 +23,6 @@ namespace em
         static int lua_openPhongMaterialLib(lua_State* L);
 
     private:
-        static int lua_getPhongMaterial(lua_State* L, PhongMaterial** material);
-
         static int lua_getAmbient(lua_State* L);
         static int lua_getDiffuse(lua_State* L);
         static int lua_getSpecular(lua_State* L);

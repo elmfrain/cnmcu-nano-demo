@@ -3,19 +3,14 @@
 using namespace em;
 
 #define luaGetPhongMaterial() \
-    int error; \
     PhongMaterial* material; \
-    if((error = lua_getPhongMaterial(L, &material)) != 0) \
-        return error;
+    luaGetPointer(material, PhongMaterial, 1);
 
 int PhongMaterial::lua_this(lua_State* L)
 {
-    lua_newtable(L);
-    lua_pushstring(L, "ptr");
     lua_pushlightuserdata(L, this);
-    lua_settable(L, -3);
 
-    lua_getglobal(L, "PhongMaterial");
+    luaL_newmetatable(L, "PhongMaterial");
     lua_setmetatable(L, -2);
 
     return 1;
@@ -38,22 +33,14 @@ int PhongMaterial::lua_openPhongMaterialLib(lua_State* L)
         {nullptr, nullptr}
     };
 
-    luaL_newlib(L, phongMaterialLib);
-    lua_setglobal(L, "PhongMaterial");
+    luaL_newmetatable(L, "PhongMaterial");
+    luaL_setfuncs(L, phongMaterialLib, 0);
 
-    lua_getglobal(L, "PhongMaterial");
     lua_pushstring(L, "__index");
-    lua_getglobal(L, "PhongMaterial");
+    lua_pushvalue(L, -2);
     lua_settable(L, -3);
-    lua_pop(L, 1);
 
-    return 0;
-}
-
-int PhongMaterial::lua_getPhongMaterial(lua_State* L, PhongMaterial** material)
-{
-    luaPushValueFromKey("ptr", 1);
-    luaGet(*material, PhongMaterial*, userdata, -1);
+    lua_setglobal(L, "PhongMaterial");
 
     return 0;
 }

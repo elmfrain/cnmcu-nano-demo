@@ -138,6 +138,8 @@ Mesh::Mesh() :
 
 Mesh::~Mesh()
 {
+    m_logger.infof("Deleting mesh \"%s\"", m_name.c_str());
+
     if(m_isRenderable)
     {
         glDeleteVertexArrays(1, &m_glVAO);

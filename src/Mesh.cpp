@@ -127,7 +127,7 @@ Mesh::Mesh() :
     m_numVerticies(0),
     m_numIndicies(0),
     m_isRenderable(false),
-    m_advised(false),
+    m_hasAdvisedAboutNotBeingRenderableYet(false),
     m_glVAO(0),
     m_glVBO(0),
     m_glEBO(0),
@@ -219,10 +219,14 @@ void Mesh::makeRenderable(VertexFormat vtxFmt)
 
 void Mesh::render(int mode) const
 {
-    if(!m_isRenderable && !m_advised)
+    if(!m_isRenderable)
     {
-        m_advised = true;
-        m_logger.submodule(getName()).warnf("Mesh has not yet been made renderable. Call makeRenderable first.");
+        if(!m_hasAdvisedAboutNotBeingRenderableYet)
+        {
+            m_hasAdvisedAboutNotBeingRenderableYet = true;
+            m_logger.submodule(getName()).warnf("Mesh has not yet been made renderable. Call makeRenderable first.");
+        }
+        return;
     }
 
     if(m_glTexture)
@@ -240,10 +244,14 @@ void Mesh::render(int mode) const
 
 void Mesh::renderInstanced(int mode, int instances) const
 {
-    if(!m_isRenderable && !m_advised)
+    if(!m_isRenderable)
     {
-        m_advised = true;
-        m_logger.submodule(getName()).warnf("Mesh has not yet been made renderable. Call makeRenderable first.");
+        if(!m_hasAdvisedAboutNotBeingRenderableYet)
+        {
+            m_hasAdvisedAboutNotBeingRenderableYet = true;
+            m_logger.submodule(getName()).warnf("Mesh has not yet been made renderable. Call makeRenderable first.");
+        }
+        return;
     }
 
     if(m_glTexture)

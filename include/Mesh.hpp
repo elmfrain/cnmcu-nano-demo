@@ -51,7 +51,7 @@ namespace em
         size_t m_numIndicies;
     
         bool m_isRenderable;
-        mutable bool m_advised;
+        mutable bool m_hasAdvisedAboutNotBeingRenderableYet;
         GLuint m_glVAO;
         GLuint m_glVBO;
         GLuint m_glEBO;

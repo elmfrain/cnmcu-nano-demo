@@ -95,6 +95,8 @@ int MeshObject::lua_openMeshObjectLib(lua_State* L)
         { nullptr, nullptr }
     };
 
+    PhongMaterial::lua_openPhongMaterialLib(L);
+
     luaL_newmetatable(L, "MeshObject");
     luaL_setfuncs(L, meshObjectLib, 0);
 

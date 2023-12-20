@@ -3,6 +3,7 @@
 
 #include <LightObject.hpp>
 #include <MeshObject.hpp>
+#include <Camera.hpp>
 
 using namespace em;
 
@@ -398,6 +399,7 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
 
     LightObject::lua_openLightObjectLib(L);
     MeshObject::lua_openMeshObjectLib(L);
+    Camera::lua_openCameraLib(L);
 
     return 0;
 }

@@ -42,6 +42,10 @@ static const char* luaGetError(const char* details)
     return luaErrorBuffer;
 }
 
+//----------------------------------------------
+// Tests
+//----------------------------------------------
+
 TEST(LuaScripting, Transform)
 {
     lua_State* L = luaL_newstate();
@@ -99,6 +103,55 @@ TEST(LuaScripting, Transform)
 
     ASSERT_EQ(luaRun(L, "t:setRotationMode(\"EULER_XYZ\")"), 0) << luaGetError("Transform::setRotationMode() failed");
     ASSERT_EQ(t.rotationMode, Transform::EULER_XYZ) << "Transform::setRotationMode() failed";
+
+    lua_close(L);
+}
+
+TEST(LuaScripting, PhongMaterial)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    PhongMaterial::lua_openPhongMaterialLib(L);
+
+    PhongMaterial m;
+    m.ambient = glm::vec3(10.0f, 20.0f, 30.0f);
+    m.diffuse = glm::vec3(40.0f, 50.0f, 60.0f);
+    m.specular = glm::vec3(70.0f, 80.0f, 90.0f);
+    m.shininess = 100.0f;
+
+    m.lua_this(L);
+    lua_setglobal(L, "m");
+
+    ASSERT_EQ(luaAssert(L, "m:getAmbient()[1] == 10.0"), 0) << luaGetError("PhongMaterial::getAmbient()[1] failed");
+    ASSERT_EQ(luaAssert(L, "m:getAmbient()[2] == 20.0"), 0) << luaGetError("PhongMaterial::getAmbient()[2] failed");
+    ASSERT_EQ(luaAssert(L, "m:getAmbient()[3] == 30.0"), 0) << luaGetError("PhongMaterial::getAmbient()[3] failed");
+
+    ASSERT_EQ(luaAssert(L, "m:getDiffuse()[1] == 40.0"), 0) << luaGetError("PhongMaterial::getDiffuse()[1] failed");
+    ASSERT_EQ(luaAssert(L, "m:getDiffuse()[2] == 50.0"), 0) << luaGetError("PhongMaterial::getDiffuse()[2] failed");
+    ASSERT_EQ(luaAssert(L, "m:getDiffuse()[3] == 60.0"), 0) << luaGetError("PhongMaterial::getDiffuse()[3] failed");
+
+    ASSERT_EQ(luaAssert(L, "m:getSpecular()[1] == 70.0"), 0) << luaGetError("PhongMaterial::getSpecular()[1] failed");
+    ASSERT_EQ(luaAssert(L, "m:getSpecular()[2] == 80.0"), 0) << luaGetError("PhongMaterial::getSpecular()[2] failed");
+    ASSERT_EQ(luaAssert(L, "m:getSpecular()[3] == 90.0"), 0) << luaGetError("PhongMaterial::getSpecular()[3] failed");
+
+    ASSERT_EQ(luaAssert(L, "m:getShininess() == 100.0"), 0) << luaGetError("PhongMaterial::getShininess() failed");
+
+    ASSERT_EQ(luaAssert(L, "math.abs(m:getRoughness() - 0.1) < 0.0001"), 0) << luaGetError("PhongMaterial::getRoughness() failed");
+
+    ASSERT_EQ(luaRun(L, "m:setAmbient({1.0, 2.0, 3.0})"), 0) << luaGetError("PhongMaterial::setAmbient() failed");
+    ASSERT_EQ(m.ambient, glm::vec3(1.0f, 2.0f, 3.0f)) << "PhongMaterial::setAmbient() failed";
+
+    ASSERT_EQ(luaRun(L, "m:setDiffuse({4.0, 5.0, 6.0})"), 0) << luaGetError("PhongMaterial::setDiffuse() failed");
+    ASSERT_EQ(m.diffuse, glm::vec3(4.0f, 5.0f, 6.0f)) << "PhongMaterial::setDiffuse() failed";
+
+    ASSERT_EQ(luaRun(L, "m:setSpecular({7.0, 8.0, 9.0})"), 0) << luaGetError("PhongMaterial::setSpecular() failed");
+    ASSERT_EQ(m.specular, glm::vec3(7.0f, 8.0f, 9.0f)) << "PhongMaterial::setSpecular() failed";
+
+    ASSERT_EQ(luaRun(L, "m:setShininess(10.0)"), 0) << luaGetError("PhongMaterial::setShininess() failed");
+    ASSERT_EQ(m.shininess, 10.0f) << "PhongMaterial::setShininess() failed";
+
+    ASSERT_EQ(luaRun(L, "m:setRoughness(0.2)"), 0) << luaGetError("PhongMaterial::setRoughness() failed");
+    ASSERT_FLOAT_EQ(m.shininess, 25.0f) << "PhongMaterial::setRoughness() failed";
 
     lua_close(L);
 }

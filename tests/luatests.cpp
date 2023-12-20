@@ -63,6 +63,8 @@ TEST(LuaScripting, Transform)
     t.lua_this(L);
     lua_setglobal(L, "t");
 
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(t).__name == 'Transform')"), 0) << luaGetError("Transform metatable name assertion failed");
+
     ASSERT_EQ(luaAssert(L, "t:getPosition()[1] == 10.0"), 0) << luaGetError("Transform::getPosition()[1] failed");
     ASSERT_EQ(luaAssert(L, "t:getPosition()[2] == 20.0"), 0) << luaGetError("Transform::getPosition()[2] failed");
     ASSERT_EQ(luaAssert(L, "t:getPosition()[3] == 30.0"), 0) << luaGetError("Transform::getPosition()[3] failed");
@@ -121,6 +123,8 @@ TEST(LuaScripting, PhongMaterial)
 
     m.lua_this(L);
     lua_setglobal(L, "m");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(m).__name == 'PhongMaterial')"), 0) << luaGetError("PhongMaterial metatable name assertion failed");
 
     ASSERT_EQ(luaAssert(L, "m:getAmbient()[1] == 10.0"), 0) << luaGetError("PhongMaterial::getAmbient()[1] failed");
     ASSERT_EQ(luaAssert(L, "m:getAmbient()[2] == 20.0"), 0) << luaGetError("PhongMaterial::getAmbient()[2] failed");

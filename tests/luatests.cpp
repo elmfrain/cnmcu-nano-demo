@@ -187,3 +187,64 @@ TEST(LuaScripting, Compositor)
 
     lua_close(L);
 }
+
+TEST(LuaScripting, SceneObject)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    SceneObject::lua_openSceneObjectLib(L);
+
+    class DummySceneObject : public SceneObject
+    {
+    public:
+        DummySceneObject() : SceneObject(SceneObject::EMPTY) {}
+        virtual void update(float dt) {}
+        virtual void draw(Shader& shader) {}
+    };
+
+    DummySceneObject o;
+    o.getTransform().position = glm::vec3(10.0f, 20.0f, 30.0f);
+    o.setName("TestObject");
+    DummySceneObject c1;
+    c1.setName("TestChild1");
+    DummySceneObject c2;
+    c2.setName("TestChild2");
+    DummySceneObject c3;
+    c3.setName("TestChild3");
+
+    o.addChild(c1);
+    o.addChild(c2);
+
+    o.lua_this(L);
+    lua_setglobal(L, "o");
+    c1.lua_this(L);
+    lua_setglobal(L, "c1");
+    c2.lua_this(L);
+    lua_setglobal(L, "c2");
+    c3.lua_this(L);
+    lua_setglobal(L, "c3");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(o).__name == 'SceneObject')"), 0) << luaGetError("SceneObject metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "o:getType() == \"EMPTY\""), 0) << luaGetError("SceneObject::getType() failed");
+    ASSERT_EQ(luaAssert(L, "o:getName() == \"TestObject\""), 0) << luaGetError("SceneObject::getName() failed");
+    ASSERT_EQ(luaAssert(L, "o:getChildCount() == 2"), 0) << luaGetError("SceneObject::getChildCount() failed");
+
+    ASSERT_EQ(luaAssert(L, "o.transform:getPosition()[1] == 10.0"), 0) << luaGetError("SceneObject::transform.getPosition()[1] failed");
+    ASSERT_EQ(luaAssert(L, "o.transform:getPosition()[2] == 20.0"), 0) << luaGetError("SceneObject::transform.getPosition()[2] failed");
+    ASSERT_EQ(luaAssert(L, "o.transform:getPosition()[3] == 30.0"), 0) << luaGetError("SceneObject::transform.getPosition()[3] failed");
+
+    ASSERT_EQ(luaRun(L, "o:setName(\"TestObject2\")"), 0) << luaGetError("SceneObject::setName() failed");
+    ASSERT_STREQ(o.getName().c_str(), "TestObject2") << "SceneObject::setName() failed";
+
+    ASSERT_EQ(luaRun(L, "o:addChild(c3)"), 0) << luaGetError("SceneObject::addChild() failed");
+    ASSERT_EQ(o.getChildCount(), 3) << "SceneObject::addChild() failed";
+
+    ASSERT_EQ(luaRun(L, "o:removeChild(c2)"), 0) << luaGetError("SceneObject::removeChild() failed");
+    ASSERT_EQ(o.getChildCount(), 2) << "SceneObject::removeChild() failed";
+
+    ASSERT_EQ(luaRun(L, "o:removeAllChildren()"), 0) << luaGetError("SceneObject::removeAllChildren() failed");
+    ASSERT_EQ(o.getChildCount(), 0) << "SceneObject::removeAllChildren() failed";
+
+    lua_close(L);
+}

@@ -139,7 +139,7 @@ int Transform::lua_getRotationEuler(lua_State* L)
 int Transform::lua_getRotationQuaternion(lua_State* L)
 {
     luaGetTransform();
-    luaPushVec4(transform->rotationQuaternion);
+    luaPushQuat(transform->rotationQuaternion);
 
     return 1;
 }
@@ -187,7 +187,7 @@ int Transform::lua_setRotationEuler(lua_State* L)
 int Transform::lua_setRotationQuaternion(lua_State* L)
 {
     luaGetTransform();
-    luaGetVec4(transform->rotationQuaternion, 2);
+    luaGetQuat(transform->rotationQuaternion, 2);
 
     return 0;
 }

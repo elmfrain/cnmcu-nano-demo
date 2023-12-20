@@ -21,26 +21,26 @@ void MeshObject::draw(Shader& shader)
 {
     shader.setModelViewMatrix(getConstTransform().getMatrix());
 
-    if(mesh)
-    {
-        if(mesh->getTextureHandle() != 0)
-        {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, mesh->getTextureHandle());
-            shader.setEnabledTexture(0);
-        }
-        else 
-            shader.setEnabledTexture(-1);
+    if(!mesh) return;
 
-        if(strcmp(shader.getName(), "PhongShader") == 0)
+    if(mesh->getTextureHandle() != 0)
         {
-            PhongShader& phongShader = static_cast<PhongShader&>(shader);
-            phongShader.setMaterial(material);
-        }
-
-        shader.use();
-        mesh->render(GL_TRIANGLES);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, mesh->getTextureHandle());
+        shader.setEnabledTexture(0);
     }
+    else 
+        shader.setEnabledTexture(-1);
+
+    if(strcmp(shader.getName(), "PhongShader") == 0)
+    {
+        PhongShader& phongShader = static_cast<PhongShader&>(shader);
+        phongShader.setMaterial(material);
+    }
+    
+    shader.use();
+    mesh->render(GL_TRIANGLES);
+    
 }
 
 void MeshObject::setMesh(Mesh::Ptr mesh)
@@ -65,7 +65,8 @@ PhongMaterial MeshObject::getMaterial() const
 
 #define luaGetMeshObject() \
     MeshObject* meshObject; \
-    luaGetPointer(meshObject, MeshObject, 1);
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(meshObject, MeshObject, -1);
 
 int MeshObject::lua_this(lua_State* L)
 {

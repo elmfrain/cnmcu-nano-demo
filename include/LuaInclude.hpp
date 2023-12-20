@@ -23,6 +23,19 @@ extern "C"
     if(index < 0) \
         lua_pop(L, 1);
 
+#define luaGetVec2(var, index) \
+    if(!lua_istable(L, index)) \
+        return luaL_error(L, "Expected table at index %d", index); \
+    if(lua_rawlen(L, index) != 2) \
+        return luaL_error(L, "Expected table of length 2 at index %d", index); \
+    lua_rawgeti(L, index, 1); \
+    lua_rawgeti(L, index < 0 ? index - 1 : index, 2); \
+    var.x = lua_tonumber(L, -2); \
+    var.y = lua_tonumber(L, -1); \
+    lua_pop(L, 2); \
+    if(index < 0) \
+        lua_pop(L, 1);
+
 #define luaGetVec3(var, index) \
     if(!lua_istable(L, index)) \
         return luaL_error(L, "Expected table at index %d", index); \
@@ -54,6 +67,13 @@ extern "C"
     lua_pop(L, 4); \
     if(index < 0) \
         lua_pop(L, 1);
+
+#define luaPushVec2(var) \
+    lua_newtable(L); \
+    lua_pushnumber(L, var.x); \
+    lua_rawseti(L, -2, 1); \
+    lua_pushnumber(L, var.y); \
+    lua_rawseti(L, -2, 2);
 
 #define luaPushVec3(var) \
     lua_newtable(L); \

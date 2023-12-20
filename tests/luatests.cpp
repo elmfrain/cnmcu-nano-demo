@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <MeshObject.hpp>
+#include <VisualizerScene.hpp>
 #include <cstring>
 
 using namespace em;
@@ -156,6 +156,34 @@ TEST(LuaScripting, PhongMaterial)
 
     ASSERT_EQ(luaRun(L, "m:setRoughness(0.2)"), 0) << luaGetError("PhongMaterial::setRoughness() failed");
     ASSERT_FLOAT_EQ(m.shininess, 25.0f) << "PhongMaterial::setRoughness() failed";
+
+    lua_close(L);
+}
+
+TEST(LuaScripting, Compositor)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    Compositor::lua_openCompositorLib(L);
+
+    Compositor c;
+    c.setGamma(4.0f);
+    c.setExposure(5.0f);
+
+    c.lua_this(L);
+    lua_setglobal(L, "c");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(c).__name == 'Compositor')"), 0) << luaGetError("Compositor metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getGamma() == 4.0"), 0) << luaGetError("Compositor::getGamma() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getExposure() == 5.0"), 0) << luaGetError("Compositor::getExposure() failed");
+
+    ASSERT_EQ(luaRun(L, "c:setGamma(6.0)"), 0) << luaGetError("Compositor::setGamma() failed");
+    ASSERT_EQ(c.getGamma(), 6.0f) << "Compositor::setGamma() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setExposure(7.0)"), 0) << luaGetError("Compositor::setExposure() failed");
+    ASSERT_EQ(c.getExposure(), 7.0f) << "Compositor::setExposure() failed";
 
     lua_close(L);
 }

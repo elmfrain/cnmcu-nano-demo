@@ -115,20 +115,17 @@ template<typename T>
 int luaGetSharedPtr(lua_State* L, std::shared_ptr<T>& ptr, const char* typeName, int index = 1)
 {
     if(!lua_isuserdata(L, index))
-        return luaL_error(L, "Expected userdata at index %d", index);
+    {
+        int otherType = lua_type(L, index);
+        luaL_error(L, "Expected userdata at index %d, got %s", index, lua_typename(L, otherType));
+        return 0;
+    }
 
     std::shared_ptr<T>* userdata = static_cast<std::shared_ptr<T>*>(lua_touserdata(L, index));
     if(!userdata)
         return luaL_error(L, "Expected userdata at index %d", index);
 
-    luaL_getmetatable(L, typeName);
-    if(!lua_getmetatable(L, index))
-        return luaL_error(L, "Expected userdata at index %d", index);
-
-    if(!lua_rawequal(L, -1, -2))
-        return luaL_error(L, "Expected userdata at index %d", index);
-
-    lua_pop(L, 2);
+    lua_pop(L, 1);
 
     ptr = *userdata;
 

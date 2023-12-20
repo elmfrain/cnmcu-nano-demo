@@ -91,6 +91,7 @@ namespace em
         void removeAllChildren();
         void removeChild(SceneObject& child);
         void addChild(SceneObject& child);
+        int getChildCount() const;
 
         virtual int lua_this(lua_State* L);
         static int lua_openSceneObjectLib(lua_State* L);
@@ -101,9 +102,12 @@ namespace em
         Transform m_transform;
 
         SceneObject* m_parent;
+        int m_numChildren;
         std::forward_list<SceneObject*> m_children;
 
         static int lua_getName(lua_State* L);
+        static int lua_getType(lua_State* L);
+        static int lua_getChildCount(lua_State* L);
 
         static int lua_removeAllChildren(lua_State* L);
         static int lua_removeChild(lua_State* L);

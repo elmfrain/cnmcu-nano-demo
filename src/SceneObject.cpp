@@ -324,10 +324,14 @@ void SceneObject::removeAllChildren()
 
     // Add all children to this object's parent
     if(m_parent)
+    {
         m_parent->m_children.splice_after(m_parent->m_children.before_begin(), m_children);
+        m_parent->m_numChildren += m_numChildren;
+    }
 
     // Clear this object's children
     m_children.clear();
+    m_numChildren = 0;
 }
 
 // Removes a child from this object's children and parents it to this object's
@@ -342,10 +346,14 @@ void SceneObject::removeChild(SceneObject& child)
 
     // Add child to this object's parent
     if(m_parent)
+    {
         m_parent->m_children.push_front(&child);
+        m_parent->m_numChildren++;
+    }
 
     // Remove child from this object's children
     m_children.remove(&child);
+    m_numChildren--;
 }
 
 // Adds a child to this object's children and parents it to this object
@@ -356,6 +364,12 @@ void SceneObject::addChild(SceneObject& child)
 
     // Add child to this object's children
     m_children.push_front(&child);
+    m_numChildren++;
+}
+
+int SceneObject::getChildCount() const
+{
+    return m_numChildren;
 }
 
 int SceneObject::lua_this(lua_State* L)
@@ -379,6 +393,8 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
     static const luaL_Reg sceneObjectLib[] =
     {
         {"getName", lua_getName},
+        {"getType", lua_getType},
+        {"getChildCount", lua_getChildCount},
         {"setName", lua_setName},
         {"removeAllChildren", lua_removeAllChildren},
         {"removeChild", lua_removeChild},
@@ -417,6 +433,22 @@ int SceneObject::lua_getName(lua_State* L)
     return 1;
 }
 
+int SceneObject::lua_getType(lua_State* L)
+{
+    luaGetSceneObject();
+    lua_pushstring(L, typeNames[object->getType()]);
+
+    return 1;
+}
+
+int SceneObject::lua_getChildCount(lua_State* L)
+{
+    luaGetSceneObject();
+    lua_pushinteger(L, object->getChildCount());
+
+    return 1;
+}
+
 int SceneObject::lua_removeAllChildren(lua_State* L)
 {
     luaGetSceneObject();
@@ -429,7 +461,8 @@ int SceneObject::lua_removeChild(lua_State* L)
 {
     luaGetSceneObject();
     SceneObject* child;
-    luaGetPointer(child, SceneObject, 2);
+    luaPushValueFromKey("ptr", 2);
+    luaGetPointer(child, SceneObject, -1);
 
     object->removeChild(*child);
 
@@ -440,7 +473,8 @@ int SceneObject::lua_addChild(lua_State* L)
 {
     luaGetSceneObject();
     SceneObject* child;
-    luaGetPointer(child, SceneObject, 2);
+    luaPushValueFromKey("ptr", 2);
+    luaGetPointer(child, SceneObject, -1);
 
     object->addChild(*child);
 

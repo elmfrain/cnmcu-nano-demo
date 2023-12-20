@@ -69,6 +69,8 @@ enable_testing()
 
 set(TESTER ${PROJECT_NAME}-test)
 
+list(REMOVE_ITEM PROJECT_SOURCES src/main.cpp)
+
 add_executable(${TESTER}
   ${PROJECT_SOURCES}
 

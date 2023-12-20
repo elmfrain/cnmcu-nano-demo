@@ -315,21 +315,24 @@ int VisualizerScene::lua_createLight(lua_State* L)
 
 int VisualizerScene::lua_createObject(lua_State* L)
 {
-    int error = 0;
     int numArgs = lua_gettop(L);
-    if (numArgs != 3)
-        return luaL_error(L, "Expected 3 arguments, got %d", numArgs);
+    if (numArgs != 1)
+        return luaL_error(L, "Expected 1 arguments, got %d", numArgs);
 
     const char* name = nullptr;
-    const char* meshPath = nullptr;
-    PhongMaterial material;
 
     luaGet(name, const char*, string, 1);
-    luaGet(meshPath, const char*, string, 2);
-    if((error = PhongMaterial::fromLua(L, 3, material)) != 0)
-        return error;
 
-    VertexFormat vtxFmt; 
+    MeshObject& object = host->createObject<MeshObject>(name);
+
+    object.lua_this(L);
+
+    return 1;
+}
+
+int VisualizerScene::lua_loadMeshes(lua_State* L)
+{
+    static VertexFormat vtxFmt; 
 
     vtxFmt.size = 3;
     vtxFmt[0].data = EMVF_ATTRB_USAGE_POS |
@@ -345,20 +348,6 @@ int VisualizerScene::lua_createObject(lua_State* L)
                      EMVF_ATTRB_SIZE(3) |
                      EMVF_ATTRB_NORMALIZED_FALSE;
 
-    MeshObject& object = host->createObject<MeshObject>(name);
-    Mesh::Ptr mesh = Mesh::load(meshPath)[0];
-    mesh->makeRenderable(vtxFmt);
-    object.setMesh(mesh);
-    object.setMaterial(material);
-
-    lua_pushlightuserdata(L, &object);
-
-    return 1;
-}
-
-int VisualizerScene::lua_loadMeshes(lua_State* L)
-{
-    int error = 0;
     int numArgs = lua_gettop(L);
     if (numArgs != 1)
         return luaL_error(L, "Expected 1 argument, got %d", numArgs);
@@ -372,9 +361,38 @@ int VisualizerScene::lua_loadMeshes(lua_State* L)
     lua_newtable(L);
     for(int i = 0; i < meshes.size(); ++i)
     {
-        lua_pushinteger(L, i + 1);
+        lua_newtable(L);
+        lua_pushstring(L, "ptr");
         luaPushSharedPtr<Mesh>(L, meshes[i], "MeshPtr");
         lua_settable(L, -3);
+
+        luaL_newmetatable(L, "Mesh");
+        lua_pushstring(L, "makeRenderable");
+        lua_pushcfunction(L, [](lua_State* L) -> int
+        {
+            luaPushValueFromKey("ptr", 1);
+            Mesh::Ptr mesh;
+            luaGetSharedPtr<Mesh>(L, mesh, "MeshPtr", -1);
+            mesh->makeRenderable(vtxFmt);
+            return 0;
+        });
+        lua_settable(L, -3);
+        lua_pushstring(L, "getName");
+        lua_pushcfunction(L, [](lua_State* L) -> int
+        {
+            luaPushValueFromKey("ptr", 1);
+            Mesh::Ptr mesh;
+            luaGetSharedPtr<Mesh>(L, mesh, "MeshPtr", -1);
+            lua_pushstring(L, mesh->getName());
+            return 1;
+        });
+        lua_settable(L, -3);
+        lua_pushstring(L, "__index");
+        lua_pushvalue(L, -2); 
+        lua_settable(L, -3);
+
+        lua_setmetatable(L, -2);
+        lua_rawseti(L, -2, i + 1);
     }
 
     return 1;

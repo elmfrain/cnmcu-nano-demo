@@ -8,3 +8,7 @@
 [submodule "dep/assimp"]
 	path = dep/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "dep/googletest"]
+	path = dep/googletest
+	url = https://github.com/google/googletest.git
+	branch = v1.14.x

@@ -68,6 +68,23 @@ extern "C"
     if(index < 0) \
         lua_pop(L, 1);
 
+#define luaGetQuat(var, index) \
+    if(!lua_istable(L, index)) \
+        return luaL_error(L, "Expected table at index %d", index); \
+    if(lua_rawlen(L, index) != 4) \
+        return luaL_error(L, "Expected table of length 4 at index %d", index); \
+    lua_rawgeti(L, index, 1); \
+    lua_rawgeti(L, index < 0 ? index - 1 : index, 2); \
+    lua_rawgeti(L, index < 0 ? index - 2 : index, 3); \
+    lua_rawgeti(L, index < 0 ? index - 3 : index, 4); \
+    var.w = lua_tonumber(L, -4); \
+    var.x = lua_tonumber(L, -3); \
+    var.y = lua_tonumber(L, -2); \
+    var.z = lua_tonumber(L, -1); \
+    lua_pop(L, 4); \
+    if(index < 0) \
+        lua_pop(L, 1);
+
 #define luaPushVec2(var) \
     lua_newtable(L); \
     lua_pushnumber(L, var.x); \
@@ -93,6 +110,17 @@ extern "C"
     lua_pushnumber(L, var.z); \
     lua_rawseti(L, -2, 3); \
     lua_pushnumber(L, var.w); \
+    lua_rawseti(L, -2, 4);
+
+#define luaPushQuat(var) \
+    lua_newtable(L); \
+    lua_pushnumber(L, var.w); \
+    lua_rawseti(L, -2, 1); \
+    lua_pushnumber(L, var.x); \
+    lua_rawseti(L, -2, 2); \
+    lua_pushnumber(L, var.y); \
+    lua_rawseti(L, -2, 3); \
+    lua_pushnumber(L, var.z); \
     lua_rawseti(L, -2, 4);
 
 #define luaPushValueFromKey(key, index) \

@@ -58,8 +58,17 @@ function Start()
   scene.compositor:setGamma(1.6)
   scene.compositor:setExposure(1.5)
 
-  for key, value in pairs(objects) do
-    scene.createObject(key, value.mesh, value.material)
+  for name, value in pairs(objects) do
+    local object = scene.createObject(name)
+    local mesh = scene.loadMeshes(value.mesh)[1]
+    mesh:makeRenderable()
+    object:setMesh(mesh.ptr)
+    
+    object.material:setDiffuse(value.material.diffuse)
+    object.material:setSpecular(value.material.specular)
+    if value.material.roughness then
+      object.material:setRoughness(value.material.roughness)
+    end
   end
 
   for name, value in pairs(lights) do

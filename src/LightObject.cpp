@@ -64,7 +64,7 @@ int LightObject::lua_this(lua_State* L)
 
 int LightObject::lua_openLightObjectLib(lua_State* L)
 {
-    static const luaL_Reg lightObjectLib[] =
+    static const luaL_Reg luaLightObjectMethods[] =
     {
         { "getColor", lua_getColor },
         { "getIntensity", lua_getIntensity },
@@ -74,7 +74,7 @@ int LightObject::lua_openLightObjectLib(lua_State* L)
     };
 
     luaL_newmetatable(L, "LightObject");
-    luaL_setfuncs(L, lightObjectLib, 0);
+    luaL_setfuncs(L, luaLightObjectMethods, 0);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
 

@@ -89,7 +89,7 @@ int MeshObject::lua_this(lua_State* L)
 
 int MeshObject::lua_openMeshObjectLib(lua_State* L)
 {
-    static const luaL_Reg meshObjectLib[] = {
+    static const luaL_Reg luaMeshObjectMethods[] = {
         { "getMesh", lua_getMesh },
         { "setMesh", lua_setMesh },
         { nullptr, nullptr }
@@ -98,7 +98,7 @@ int MeshObject::lua_openMeshObjectLib(lua_State* L)
     PhongMaterial::lua_openPhongMaterialLib(L);
 
     luaL_newmetatable(L, "MeshObject");
-    luaL_setfuncs(L, meshObjectLib, 0);
+    luaL_setfuncs(L, luaMeshObjectMethods, 0);
 
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);

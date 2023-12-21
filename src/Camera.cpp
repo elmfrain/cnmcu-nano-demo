@@ -89,7 +89,7 @@ int Camera::lua_this(lua_State* L)
 
 int Camera::lua_openCameraLib(lua_State* L)
 {
-    static const luaL_Reg cameraLib[] = {
+    static const luaL_Reg luaCameraMethods[] = {
         { "getProjectionMode", lua_getProjectionMode },
         { "getFOVMode", lua_getFOVMode },
         { "getOrthographicSize", lua_getOrthographicSize },
@@ -108,7 +108,7 @@ int Camera::lua_openCameraLib(lua_State* L)
     };
 
     luaL_newmetatable(L, "Camera");
-    luaL_setfuncs(L, cameraLib, 0);
+    luaL_setfuncs(L, luaCameraMethods, 0);
 
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);

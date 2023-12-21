@@ -393,7 +393,7 @@ int SceneObject::lua_this(lua_State* L)
 
 int SceneObject::lua_openSceneObjectLib(lua_State* L)
 {
-    static const luaL_Reg sceneObjectLib[] =
+    static const luaL_Reg luaSceneObjectMethods[] =
     {
         {"getName", lua_getName},
         {"getType", lua_getType},
@@ -408,7 +408,7 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
     Transform::lua_openTransformLib(L);
 
     luaL_newmetatable(L, "SceneObject");
-    luaL_setfuncs(L, sceneObjectLib, 0);
+    luaL_setfuncs(L, luaSceneObjectMethods, 0);
 
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);

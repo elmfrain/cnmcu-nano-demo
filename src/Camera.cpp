@@ -3,8 +3,8 @@
 
 using namespace em;
 
-const char* const Camera::ProjectionModeNames[] = { "Perspective", "Orthographic" };
-const char* const Camera::FOVModeNames[] = { "Vertical", "Horizontal" };
+const char* const Camera::ProjectionModeNames[] = { "PERSPECTIVE", "ORTHOGRAPHIC" };
+const char* const Camera::FOVModeNames[] = { "VERTICAL", "HORIZONTAL" };
 
 Camera::Camera(const std::string& name)
     : SceneObject(CAMERA, name)
@@ -175,7 +175,7 @@ int Camera::lua_getPerspectiveShift(lua_State* L)
     luaGetCamera();
     luaPushVec2(camera->perspectiveShift);
 
-    return 2;
+    return 1;
 }
 
 int Camera::lua_setProjectionMode(lua_State* L)

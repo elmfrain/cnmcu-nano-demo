@@ -248,3 +248,40 @@ TEST(LuaScripting, SceneObject)
 
     lua_close(L);
 }
+
+TEST(LuaScripting, LightObject)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    LightObject::lua_openSceneObjectLib(L);
+
+    LightObject l;
+    l.getTransform().position = glm::vec3(10.0f, 20.0f, 30.0f);
+    l.setColor(glm::vec3(40.0f, 50.0f, 60.0f));
+    l.setIntensity(70.0f);
+
+    l.lua_this(L);
+    lua_setglobal(L, "l");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(l).__name == 'LightObject')"), 0) << luaGetError("LightObject metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "l:getType() == \"LIGHT\""), 0) << luaGetError("LightObject::getType() failed");
+
+    ASSERT_EQ(luaAssert(L, "l.transform:getPosition()[1] == 10.0"), 0) << luaGetError("LightObject::transform.getPosition()[1] failed");
+    ASSERT_EQ(luaAssert(L, "l.transform:getPosition()[2] == 20.0"), 0) << luaGetError("LightObject::transform.getPosition()[2] failed");
+    ASSERT_EQ(luaAssert(L, "l.transform:getPosition()[3] == 30.0"), 0) << luaGetError("LightObject::transform.getPosition()[3] failed");
+
+    ASSERT_EQ(luaAssert(L, "l:getColor()[1] == 40.0"), 0) << luaGetError("LightObject::getColor()[1] failed");
+    ASSERT_EQ(luaAssert(L, "l:getColor()[2] == 50.0"), 0) << luaGetError("LightObject::getColor()[2] failed");
+    ASSERT_EQ(luaAssert(L, "l:getColor()[3] == 60.0"), 0) << luaGetError("LightObject::getColor()[3] failed");
+
+    ASSERT_EQ(luaAssert(L, "l:getIntensity() == 70.0"), 0) << luaGetError("LightObject::getIntensity() failed");
+
+    ASSERT_EQ(luaRun(L, "l:setColor({1.0, 2.0, 3.0})"), 0) << luaGetError("LightObject::setColor() failed");
+    ASSERT_EQ(l.getColor(), glm::vec3(1.0f, 2.0f, 3.0f)) << "LightObject::setColor() failed";
+
+    ASSERT_EQ(luaRun(L, "l:setIntensity(4.0)"), 0) << luaGetError("LightObject::setIntensity() failed");
+    ASSERT_EQ(l.getIntensity(), 4.0f) << "LightObject::setIntensity() failed";
+
+    lua_close(L);
+}

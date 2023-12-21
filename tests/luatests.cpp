@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <VisualizerScene.hpp>
+#include <MeshObject.hpp>
 #include <cstring>
 
 using namespace em;
@@ -284,4 +285,52 @@ TEST(LuaScripting, LightObject)
     ASSERT_EQ(l.getIntensity(), 4.0f) << "LightObject::setIntensity() failed";
 
     lua_close(L);
+}
+
+TEST(LuaScripting, MeshObject)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    MeshObject::lua_openSceneObjectLib(L);
+
+    Mesh::Ptr mesh1 = Mesh::load("res/cube.obj")[0];
+    Mesh::Ptr mesh2 = Mesh::load("res/cube.obj")[0];
+
+    ASSERT_NE(mesh1, mesh2) << "Mesh::Ptr comparison operator failed";
+
+    PhongMaterial material;
+    material.ambient = glm::vec3(10.0f, 20.0f, 30.0f);
+
+    MeshObject m;
+    m.getTransform().position = glm::vec3(40.0f, 50.0f, 60.0f);
+    m.setMesh(mesh1);
+    m.setMaterial(material);
+
+    m.lua_this(L);
+    lua_setglobal(L, "m");
+    luaPushSharedPtr<Mesh>(L, mesh2, "MeshPtr"); 
+    lua_setglobal(L, "meshPtr2");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(m).__name == 'MeshObject')"), 0) << luaGetError("MeshObject metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "m:getType() == \"MESH\""), 0) << luaGetError("MeshObject::getType() failed");
+
+    ASSERT_EQ(luaAssert(L, "m.transform:getPosition()[1] == 40.0"), 0) << luaGetError("MeshObject::transform.getPosition()[1] failed");
+    ASSERT_EQ(luaAssert(L, "m.transform:getPosition()[2] == 50.0"), 0) << luaGetError("MeshObject::transform.getPosition()[2] failed");
+    ASSERT_EQ(luaAssert(L, "m.transform:getPosition()[3] == 60.0"), 0) << luaGetError("MeshObject::transform.getPosition()[3] failed");
+
+    ASSERT_EQ(luaRun(L, "meshPtr1 = m:getMesh()"), 0) << luaGetError("MeshObject::getMesh() failed");
+    lua_getglobal(L, "meshPtr1");
+    Mesh::Ptr meshPtr1;
+    luaGetSharedPtr<Mesh>(L, meshPtr1, "MeshPtr" -1);
+    ASSERT_EQ(meshPtr1, mesh1) << "MeshObject::getMesh() failed";
+
+    ASSERT_EQ(luaAssert(L, "m.material:getAmbient()[1] == 10.0"), 0) << luaGetError("MeshObject::material:getAmbient[1] failed");
+    ASSERT_EQ(luaAssert(L, "m.material:getAmbient()[2] == 20.0"), 0) << luaGetError("MeshObject::material:getAmbient[2] failed");
+    ASSERT_EQ(luaAssert(L, "m.material:getAmbient()[3] == 30.0"), 0) << luaGetError("MeshObject::material:getAmbient[3] failed");
+
+    ASSERT_EQ(luaRun(L, "m:setMesh(meshPtr2)"), 0) << luaGetError("MeshObject::setMesh() failed");
+    ASSERT_EQ(m.getMesh(), mesh2) << "MeshObject::setMesh() failed";
+
+    lua_close(L); 
 }

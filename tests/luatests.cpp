@@ -334,3 +334,69 @@ TEST(LuaScripting, MeshObject)
 
     lua_close(L); 
 }
+
+TEST(LuaScripting, Camera)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    Camera::lua_openSceneObjectLib(L);
+
+    Camera c;
+    c.getTransform().position = glm::vec3(10.0f, 20.0f, 30.0f);
+    c.projectionMode = Camera::ORTHOGRAPHIC;
+    c.fovMode = Camera::HORIZONTAL;
+    c.fieldOfView = 40.0f;
+    c.orthographicSize = 50.0f;
+    c.nearPlane = 60.0f;
+    c.farPlane = 70.0f;
+    c.perspectiveShift = glm::vec2(80.0f, 90.0f);
+
+    c.lua_this(L);
+    lua_setglobal(L, "c");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(c).__name == 'Camera')"), 0) << luaGetError("Camera metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getType() == \"CAMERA\""), 0) << luaGetError("Camera::getType() failed");
+
+    ASSERT_EQ(luaAssert(L, "c.transform:getPosition()[1] == 10.0"), 0) << luaGetError("Camera::transform.getPosition()[1] failed");
+    ASSERT_EQ(luaAssert(L, "c.transform:getPosition()[2] == 20.0"), 0) << luaGetError("Camera::transform.getPosition()[2] failed");
+    ASSERT_EQ(luaAssert(L, "c.transform:getPosition()[3] == 30.0"), 0) << luaGetError("Camera::transform.getPosition()[3] failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getProjectionMode() == \"ORTHOGRAPHIC\""), 0) << luaGetError("Camera::getProjectionMode() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getFOVMode() == \"HORIZONTAL\""), 0) << luaGetError("Camera::getFOVMode() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getOrthographicSize() == 50.0"), 0) << luaGetError("Camera::getOrthographicSize() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getFieldOfView() == 40.0"), 0) << luaGetError("Camera::getFieldOfView() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getNearPlane() == 60.0"), 0) << luaGetError("Camera::getNearPlane() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getFarPlane() == 70.0"), 0) << luaGetError("Camera::getFarPlane() failed");
+
+    ASSERT_EQ(luaAssert(L, "c:getPerspectiveShift()[1] == 80.0"), 0) << luaGetError("Camera::getPerspectiveShift()[1] failed");
+    ASSERT_EQ(luaAssert(L, "c:getPerspectiveShift()[2] == 90.0"), 0) << luaGetError("Camera::getPerspectiveShift()[2] failed");
+
+    ASSERT_EQ(luaRun(L, "c:setProjectionMode(\"PERSPECTIVE\")"), 0) << luaGetError("Camera::setProjectionMode() failed");
+    ASSERT_EQ(c.projectionMode, Camera::PERSPECTIVE) << "Camera::setProjectionMode() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setFOVMode(\"VERTICAL\")"), 0) << luaGetError("Camera::setFOVMode() failed");
+    ASSERT_EQ(c.fovMode, Camera::VERTICAL) << "Camera::setFOVMode() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setOrthographicSize(100.0)"), 0) << luaGetError("Camera::setOrthographicSize() failed");
+    ASSERT_EQ(c.orthographicSize, 100.0f) << "Camera::setOrthographicSize() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setFieldOfView(110.0)"), 0) << luaGetError("Camera::setFieldOfView() failed");
+    ASSERT_EQ(c.fieldOfView, 110.0f) << "Camera::setFieldOfView() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setNearPlane(120.0)"), 0) << luaGetError("Camera::setNearPlane() failed");
+    ASSERT_EQ(c.nearPlane, 120.0f) << "Camera::setNearPlane() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setFarPlane(130.0)"), 0) << luaGetError("Camera::setFarPlane() failed");
+    ASSERT_EQ(c.farPlane, 130.0f) << "Camera::setFarPlane() failed";
+
+    ASSERT_EQ(luaRun(L, "c:setPerspectiveShift({140.0, 150.0})"), 0) << luaGetError("Camera::setPerspectiveShift() failed");
+    ASSERT_EQ(c.perspectiveShift, glm::vec2(140.0f, 150.0f)) << "Camera::setPerspectiveShift() failed";
+
+    lua_close(L);
+}

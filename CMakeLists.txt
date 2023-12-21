@@ -87,3 +87,10 @@ target_link_libraries(${TESTER}
 )
 
 add_test(NAME ${TESTER} COMMAND ${TESTER})
+
+add_custom_command(TARGET ${TESTER} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_CURRENT_SOURCE_DIR}/res
+  ${CMAKE_CURRENT_BINARY_DIR}/res
+  COMMENT "Copying resources to build directory"
+)

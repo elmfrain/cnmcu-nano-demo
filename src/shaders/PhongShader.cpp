@@ -4,11 +4,14 @@ using namespace em;
 
 #define luaGetPhongMaterial() \
     PhongMaterial* material; \
-    luaGetPointer(material, PhongMaterial, 1);
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(material, PhongMaterial, -1);
 
 int PhongMaterial::lua_this(lua_State* L)
 {
+    lua_newtable(L);
     lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
 
     luaL_newmetatable(L, "PhongMaterial");
     lua_setmetatable(L, -2);
@@ -18,7 +21,7 @@ int PhongMaterial::lua_this(lua_State* L)
 
 int PhongMaterial::lua_openPhongMaterialLib(lua_State* L)
 {
-    static const luaL_Reg phongMaterialLib[] =
+    static const luaL_Reg luaPhongMaterialMethods[] =
     {
         {"getAmbient", lua_getAmbient},
         {"getDiffuse", lua_getDiffuse},
@@ -34,7 +37,7 @@ int PhongMaterial::lua_openPhongMaterialLib(lua_State* L)
     };
 
     luaL_newmetatable(L, "PhongMaterial");
-    luaL_setfuncs(L, phongMaterialLib, 0);
+    luaL_setfuncs(L, luaPhongMaterialMethods, 0);
 
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);

@@ -77,11 +77,14 @@ glm::quat Transform::getRotationQuaternion() const
 
 #define luaGetTransform() \
     Transform* transform; \
-    luaGetPointer(transform, Transform, 1);
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(transform, Transform, -1);
 
 int Transform::lua_this(lua_State* L)
 {
+    lua_newtable(L);
     lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
 
     luaL_newmetatable(L, "Transform");
     lua_setmetatable(L, -2);
@@ -91,7 +94,7 @@ int Transform::lua_this(lua_State* L)
 
 int Transform::lua_openTransformLib(lua_State* L)
 {
-    static const luaL_Reg transformLib[] =
+    static const luaL_Reg luaTransformMethods[] =
     {
         {"getPosition", lua_getPosition},
         {"getRotationEuler", lua_getRotationEuler},
@@ -109,7 +112,7 @@ int Transform::lua_openTransformLib(lua_State* L)
     };
 
     luaL_newmetatable(L, "Transform");
-    luaL_setfuncs(L, transformLib, 0);
+    luaL_setfuncs(L, luaTransformMethods, 0);
 
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);

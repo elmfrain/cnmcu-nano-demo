@@ -134,7 +134,9 @@ float Compositor::getExposure() const
 
 int Compositor::lua_this(lua_State* L)
 {
+    lua_newtable(L);
     lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
 
     luaL_newmetatable(L, "Compositor");
     lua_setmetatable(L, -2);
@@ -144,7 +146,7 @@ int Compositor::lua_this(lua_State* L)
 
 int Compositor::lua_openCompositorLib(lua_State* L)
 {
-    static const luaL_Reg compositorLib[] =
+    static const luaL_Reg luaCompositorMethods[] =
     {
         {"setGamma", lua_setGamma},
         {"setExposure", lua_setExposure},
@@ -154,7 +156,7 @@ int Compositor::lua_openCompositorLib(lua_State* L)
     };
 
     luaL_newmetatable(L, "Compositor");
-    luaL_setfuncs(L, compositorLib, 0);
+    luaL_setfuncs(L, luaCompositorMethods, 0);
 
     lua_pushstring(L, "__index");
     lua_pushvalue(L, -2);
@@ -228,10 +230,14 @@ void Compositor::updateUniforms(Framebuffer& framebuffer)
     glUniform1i(m_textureUniformLoc, 0);
 }
 
+#define luaGetCompositor() \
+    Compositor* compositor; \
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(compositor, Compositor, -1);
+
 int Compositor::lua_setGamma(lua_State* L)
 {
-    Compositor* compositor;
-    luaGetPointer(compositor, Compositor, 1);
+    luaGetCompositor();
 
     float gamma;
     luaGet(gamma, float, number, 2);
@@ -243,8 +249,7 @@ int Compositor::lua_setGamma(lua_State* L)
 
 int Compositor::lua_setExposure(lua_State* L)
 {
-    Compositor* compositor;
-    luaGetPointer(compositor, Compositor, 1);
+    luaGetCompositor();
 
     float exposure;
     luaGet(exposure, float, number, 2);
@@ -256,8 +261,7 @@ int Compositor::lua_setExposure(lua_State* L)
 
 int Compositor::lua_getGamma(lua_State* L)
 {
-    Compositor* compositor;
-    luaGetPointer(compositor, Compositor, 1);
+    luaGetCompositor();
 
     lua_pushnumber(L, compositor->m_gamma);
 
@@ -266,8 +270,7 @@ int Compositor::lua_getGamma(lua_State* L)
 
 int Compositor::lua_getExposure(lua_State* L)
 {
-    Compositor* compositor;
-    luaGetPointer(compositor, Compositor, 1);
+    luaGetCompositor();
 
     lua_pushnumber(L, compositor->m_exposure);
 

@@ -56,7 +56,7 @@ int LightObject::lua_this(lua_State* L)
     getTransform().lua_this(L);
     lua_settable(L, -3);
 
-    luaL_newmetatable(L, "LightObject");
+    luaL_getmetatable(L, "LightObject");
     lua_setmetatable(L, -2);
 
     return 1;
@@ -75,12 +75,10 @@ int LightObject::lua_openLightObjectLib(lua_State* L)
 
     luaL_newmetatable(L, "LightObject");
     luaL_setfuncs(L, lightObjectLib, 0);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
 
-    lua_pushstring(L, "__index");
-    lua_pushvalue(L, -2);
-    lua_settable(L, -3);
-
-    luaL_newmetatable(L, "SceneObject");
+    luaL_getmetatable(L, "SceneObject");
     lua_setmetatable(L, -2);
 
     lua_setglobal(L, "LightObject");

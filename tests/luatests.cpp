@@ -47,6 +47,123 @@ static const char* luaGetError(const char* details)
 // Tests
 //----------------------------------------------
 
+TEST(LuaScripting, LuaInclude)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+
+    //--------------------------------------------------------------------------------
+    // Test luaGet macro
+    //--------------------------------------------------------------------------------
+
+    lua_pushstring(L, "test");
+    lua_setglobal(L, "testStr");
+    lua_pushnumber(L, 10.0);
+    lua_setglobal(L, "testNum");
+    lua_pushboolean(L, true);
+    lua_setglobal(L, "testBool");
+    lua_pushlightuserdata(L, (void*)0xdeadbeef); // Lol dead beef, who came up with that?
+    lua_setglobal(L, "testPtr");
+
+    auto getStr = [](lua_State*& L, const char*& str){ luaGet(str, const char*, string, -1); return 0; };
+    auto getNum = [](lua_State*& L, double& num){ luaGet(num, double, number, -1); return 0; };
+    auto getBool = [](lua_State*& L, bool& b){ luaGet(b, bool, boolean, -1); return 0; };
+    auto getPtr = [](lua_State*& L, void*& ptr){ luaGet(ptr, void*, userdata, -1); return 0; };
+
+    const char* str;
+    lua_getglobal(L, "testStr");
+    getStr(L, str);
+    ASSERT_STREQ(str, "test") << "luaGet() failed";
+
+    double num;
+    lua_getglobal(L, "testNum");
+    getNum(L, num);
+    ASSERT_EQ(num, 10.0) << "luaGet() failed";
+
+    bool b;
+    lua_getglobal(L, "testBool");
+    getBool(L, b);
+    ASSERT_EQ(b, true) << "luaGet() failed";
+
+    void* ptr;
+    lua_getglobal(L, "testPtr");
+    getPtr(L, ptr);
+    ASSERT_EQ(ptr, (void*)0xdeadbeef) << "luaGet() failed";
+
+    auto getPointer = [](lua_State*& L, int*& ptr){ luaGetPointer(ptr, int, -1) return 0; };
+
+    int* ptr2;
+    lua_getglobal(L, "testPtr");
+    getPointer(L, ptr2);
+    ASSERT_EQ(ptr2, (int*)0xdeadbeef) << "luaGetPointer() failed";
+
+    //--------------------------------------------------------------------------------
+    // Test vec2, vec3, vec4, quat push and get macros
+    //--------------------------------------------------------------------------------
+
+    glm::vec2 v2 = glm::vec2(10.0f, 20.0f);
+    glm::vec3 v3 = glm::vec3(30.0f, 40.0f, 50.0f);
+    glm::vec4 v4 = glm::vec4(60.0f, 70.0f, 80.0f, 90.0f);
+    glm::quat q = glm::quat(100.0f, 110.0f, 120.0f, 130.0f);
+
+    luaPushVec2(v2);
+    lua_setglobal(L, "v2");
+    luaPushVec3(v3);
+    lua_setglobal(L, "v3");
+    luaPushVec4(v4);
+    lua_setglobal(L, "v4");
+    luaPushQuat(q);
+    lua_setglobal(L, "q");
+
+    ASSERT_EQ(luaAssert(L, "v2[1] == 10.0"), 0) << luaGetError("luaPushVec2() failed");
+    ASSERT_EQ(luaAssert(L, "v2[2] == 20.0"), 0) << luaGetError("luaPushVec2() failed");
+
+    ASSERT_EQ(luaAssert(L, "v3[1] == 30.0"), 0) << luaGetError("luaPushVec3() failed");
+    ASSERT_EQ(luaAssert(L, "v3[2] == 40.0"), 0) << luaGetError("luaPushVec3() failed");
+    ASSERT_EQ(luaAssert(L, "v3[3] == 50.0"), 0) << luaGetError("luaPushVec3() failed");
+
+    ASSERT_EQ(luaAssert(L, "v4[1] == 60.0"), 0) << luaGetError("luaPushVec4() failed");
+    ASSERT_EQ(luaAssert(L, "v4[2] == 70.0"), 0) << luaGetError("luaPushVec4() failed");
+    ASSERT_EQ(luaAssert(L, "v4[3] == 80.0"), 0) << luaGetError("luaPushVec4() failed");
+    ASSERT_EQ(luaAssert(L, "v4[4] == 90.0"), 0) << luaGetError("luaPushVec4() failed");
+
+    ASSERT_EQ(luaAssert(L, "q[1] == 100.0"), 0) << luaGetError("luaPushQuat() failed");
+    ASSERT_EQ(luaAssert(L, "q[2] == 110.0"), 0) << luaGetError("luaPushQuat() failed");
+    ASSERT_EQ(luaAssert(L, "q[3] == 120.0"), 0) << luaGetError("luaPushQuat() failed");
+    ASSERT_EQ(luaAssert(L, "q[4] == 130.0"), 0) << luaGetError("luaPushQuat() failed");
+
+    ASSERT_EQ(luaRun(L, "v2 = {1.0, 2.0}"), 0) << luaGetError("luaPushVec2() failed");
+    lua_getglobal(L, "v2");
+    auto getVec2 = [](lua_State*& L, glm::vec2& v2){ luaGetVec2(v2, -1); return 0; };
+    getVec2(L, v2);
+    ASSERT_EQ(v2, glm::vec2(1.0f, 2.0f)) << "luaPushVec2() failed";
+
+    ASSERT_EQ(luaRun(L, "v3 = {3.0, 4.0, 5.0}"), 0) << luaGetError("luaPushVec3() failed");
+    lua_getglobal(L, "v3");
+    auto getVec3 = [](lua_State*& L, glm::vec3& v3){ luaGetVec3(v3, -1); return 0; };
+    getVec3(L, v3);
+    ASSERT_EQ(v3, glm::vec3(3.0f, 4.0f, 5.0f)) << "luaPushVec3() failed";
+
+    ASSERT_EQ(luaRun(L, "v4 = {6.0, 7.0, 8.0, 9.0}"), 0) << luaGetError("luaPushVec4() failed");
+    lua_getglobal(L, "v4");
+    auto getVec4 = [](lua_State*& L, glm::vec4& v4){ luaGetVec4(v4, -1); return 0; };
+    getVec4(L, v4);
+    ASSERT_EQ(v4, glm::vec4(6.0f, 7.0f, 8.0f, 9.0f)) << "luaPushVec4() failed";
+
+    //--------------------------------------------------------------------------------
+    // Test luaPushValueFromKey
+    //--------------------------------------------------------------------------------
+
+    ASSERT_EQ(luaRun(L, "t = {test = 10, webo = 11}"), 0) << luaGetError("luaPushValueFromKey() failed");
+    auto getValue = [](lua_State*& L, int& value){ luaPushValueFromKey("webo", -1); value = lua_tonumber(L, -1); lua_pop(L, 1); return 0; };
+    int value;
+    lua_getglobal(L, "t");
+    getValue(L, value);
+    ASSERT_EQ(value, 10) << "luaPushValueFromKey() failed";
+
+    lua_close(L);
+}
+
 TEST(LuaScripting, Transform)
 {
     lua_State* L = luaL_newstate();

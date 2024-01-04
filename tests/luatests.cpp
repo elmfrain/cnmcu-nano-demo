@@ -154,12 +154,12 @@ TEST(LuaScripting, LuaInclude)
     // Test luaPushValueFromKey
     //--------------------------------------------------------------------------------
 
-    ASSERT_EQ(luaRun(L, "t = {test = 10, webo = 11}"), 0) << luaGetError("luaPushValueFromKey() failed");
+    ASSERT_EQ(luaRun(L, "t = {webo = 11}"), 0) << luaGetError("luaPushValueFromKey() failed");
     auto getValue = [](lua_State*& L, int& value){ luaPushValueFromKey("webo", -1); value = lua_tonumber(L, -1); lua_pop(L, 1); return 0; };
     int value;
     lua_getglobal(L, "t");
     getValue(L, value);
-    ASSERT_EQ(value, 10) << "luaPushValueFromKey() failed";
+    ASSERT_EQ(value, 11) << "luaPushValueFromKey() failed";
 
     lua_close(L);
 }

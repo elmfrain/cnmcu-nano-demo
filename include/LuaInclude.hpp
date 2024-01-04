@@ -127,7 +127,7 @@ extern "C"
     if(!lua_istable(L, index)) \
         return luaL_error(L, "Expected table at index %d", index); \
     lua_pushstring(L, key); \
-    lua_gettable(L, index); \
+    lua_gettable(L, index < 0 ? index - 1 : index); \
     if(lua_isnoneornil(L, -1)) \
         return luaL_error(L, "Expected key %s at index %d", key, index);
 

@@ -227,6 +227,57 @@ TEST(LuaScripting, Transform)
     lua_close(L);
 }
 
+TEST(LuaScripting, Smoother)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    Smoother::lua_openSmootherLib(L);
+
+    Smoother s;
+    s.setSpeed(10.0f);
+    s.setDamping(20.0f);
+    s.setValue(30.0f);
+    s.grab(40.0f);
+    s.setSpringing(true);
+
+    s.lua_this(L);
+    lua_setglobal(L, "s");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(s).__name == 'Smoother')"), 0) << luaGetError("Smoother metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "s:getValue() == 30.0"), 0) << luaGetError("Smoother::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "s:getTarget() == 40.0"), 0) << luaGetError("Smoother::getTarget() failed");
+    ASSERT_EQ(luaAssert(L, "s:getSpeed() == 10.0"), 0) << luaGetError("Smoother::getSpeed() failed");
+    ASSERT_EQ(luaAssert(L, "s:getDamping() == 20.0"), 0) << luaGetError("Smoother::getDamping() failed");
+
+    ASSERT_EQ(luaRun(L, "s:setValue(40.0)"), 0) << luaGetError("Smoother::setValue() failed");
+    ASSERT_EQ(s.getValue(), 40.0f) << "Smoother::setValue() failed";
+
+    ASSERT_EQ(luaRun(L, "s:setSpringing(false)"), 0) << luaGetError("Smoother::setSpringing() failed");
+    ASSERT_EQ(s.isSpringing(), false) << "Smoother::setSpringing() failed";
+
+    ASSERT_EQ(luaRun(L, "s:setSpeed(50.0)"), 0) << luaGetError("Smoother::setSpeed() failed");
+    ASSERT_EQ(s.getSpeed(), 50.0f) << "Smoother::setSpeed() failed";
+
+    ASSERT_EQ(luaRun(L, "s:setDamping(60.0)"), 0) << luaGetError("Smoother::setDamping() failed");
+    ASSERT_EQ(s.getDamping(), 60.0f) << "Smoother::setDamping() failed";
+
+    ASSERT_EQ(luaRun(L, "s:release()"), 0) << luaGetError("Smoother::release() failed");
+    ASSERT_EQ(s.isGrabbed(), false) << "Smoother::release() failed";
+
+    ASSERT_EQ(luaRun(L, "s:grab()"), 0) << luaGetError("Smoother::grab() failed");
+    ASSERT_EQ(s.isGrabbed(), true) << "Smoother::grab() failed";
+
+    ASSERT_EQ(luaRun(L, "s:grab(70.0)"), 0) << luaGetError("Smoother::grab() failed");
+    ASSERT_EQ(s.getTarget(), 70.0f) << "Smoother::grab() failed";
+
+    ASSERT_EQ(luaRun(L, "s:setValueAndGrab(80.0)"), 0) << luaGetError("Smoother::setValueAndGrab() failed");
+    ASSERT_EQ(s.getValue(), 80.0f) << "Smoother::setValueAndGrab() failed";
+    ASSERT_EQ(s.getTarget(), 80.0f) << "Smoother::setValueAndGrab() failed";
+
+    lua_close(L);
+}
+
 TEST(LuaScripting, PhongMaterial)
 {
     lua_State* L = luaL_newstate();
@@ -320,6 +371,8 @@ TEST(LuaScripting, SceneObject)
         virtual void draw(Shader& shader) {}
     };
 
+    { // Runtime scope
+
     DummySceneObject o;
     o.getTransform().position = glm::vec3(10.0f, 20.0f, 30.0f);
     o.setName("TestObject");
@@ -364,6 +417,8 @@ TEST(LuaScripting, SceneObject)
     ASSERT_EQ(luaRun(L, "o:removeAllChildren()"), 0) << luaGetError("SceneObject::removeAllChildren() failed");
     ASSERT_EQ(o.getChildCount(), 0) << "SceneObject::removeAllChildren() failed";
 
+    }
+
     lua_close(L);
 }
 
@@ -372,6 +427,8 @@ TEST(LuaScripting, LightObject)
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     LightObject::lua_openSceneObjectLib(L);
+
+    { // Runtime scope
 
     LightObject l;
     l.getTransform().position = glm::vec3(10.0f, 20.0f, 30.0f);
@@ -401,6 +458,8 @@ TEST(LuaScripting, LightObject)
     ASSERT_EQ(luaRun(L, "l:setIntensity(4.0)"), 0) << luaGetError("LightObject::setIntensity() failed");
     ASSERT_EQ(l.getIntensity(), 4.0f) << "LightObject::setIntensity() failed";
 
+    }
+
     lua_close(L);
 }
 
@@ -414,6 +473,8 @@ TEST(LuaScripting, MeshObject)
     Mesh::Ptr mesh2 = Mesh::load("res/cube.obj")[0];
 
     ASSERT_NE(mesh1, mesh2) << "Mesh::Ptr comparison operator failed";
+
+    { // Runtime scope
 
     PhongMaterial material;
     material.ambient = glm::vec3(10.0f, 20.0f, 30.0f);
@@ -449,6 +510,8 @@ TEST(LuaScripting, MeshObject)
     ASSERT_EQ(luaRun(L, "m:setMesh(meshPtr2)"), 0) << luaGetError("MeshObject::setMesh() failed");
     ASSERT_EQ(m.getMesh(), mesh2) << "MeshObject::setMesh() failed";
 
+    }
+
     lua_close(L); 
 }
 
@@ -457,6 +520,8 @@ TEST(LuaScripting, Camera)
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     Camera::lua_openSceneObjectLib(L);
+
+    { // Runtime scope
 
     Camera c;
     c.getTransform().position = glm::vec3(10.0f, 20.0f, 30.0f);
@@ -514,6 +579,8 @@ TEST(LuaScripting, Camera)
 
     ASSERT_EQ(luaRun(L, "c:setPerspectiveShift({140.0, 150.0})"), 0) << luaGetError("Camera::setPerspectiveShift() failed");
     ASSERT_EQ(c.perspectiveShift, glm::vec2(140.0f, 150.0f)) << "Camera::setPerspectiveShift() failed";
+
+    }
 
     lua_close(L);
 }

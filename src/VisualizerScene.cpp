@@ -284,6 +284,9 @@ int VisualizerScene::lua_openSceneLib(lua_State* L)
     lua_pushstring(L, "compositor");
     host->compositor.lua_this(L);
     lua_settable(L, -3);
+    lua_pushstring(L, "camera");
+    host->mainCamera.lua_this(L);
+    lua_settable(L, -3);
     lua_pop(L, 1);
 
     return 0;

@@ -54,10 +54,14 @@ local lights = {
   }
 }
 
-function Start()
+local function initCompositorAndCamera()
   scene.compositor:setGamma(1.6)
   scene.compositor:setExposure(1.5)
+  scene.camera.transform:setPosition({0.0, 1.0, 0.0})
+  scene.camera.transform:setRotationEuler({-1.57, 0.0, 0.0})
+end
 
+local function loadObjects()
   for name, value in pairs(objects) do
     local object = scene.createObject(name)
     local mesh = scene.loadMeshes(value.mesh)[1]
@@ -70,13 +74,22 @@ function Start()
       object.material:setRoughness(value.material.roughness)
     end
   end
+end
 
+local function loadLights()
   for name, value in pairs(lights) do
     local light = scene.createLight(name)
     light.transform:setPosition(value.position)
     light:setColor(value.color)
     light:setIntensity(value.intensity)
   end
+end
+
+function Start()
+  initCompositorAndCamera()
+
+  loadObjects()
+  loadLights()  
 end
 
 function Update(dt)

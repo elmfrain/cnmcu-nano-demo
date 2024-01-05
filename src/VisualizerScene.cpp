@@ -176,9 +176,9 @@ void VisualizerScene::destroy()
 
     compositor.destroy();
 
-    destroyLua();
-
     destroyObjectsAndLights();
+
+    destroyLua();
 }
 
 void VisualizerScene::onWindowResize(int width, int height)

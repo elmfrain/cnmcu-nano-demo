@@ -239,7 +239,9 @@ int Smoother::lua_release(lua_State* L)
 int Smoother::lua_setValueAndGrab(lua_State* L)
 {
     luaGetSmoother();
-    luaGet(smoother->m_value, float, number, 2);
-    smoother->grab();
+    
+    float value;
+    luaGet(value, float, number, 2);
+    smoother->setValueAndGrab(value);
     return 0;
 }

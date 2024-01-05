@@ -35,6 +35,8 @@ set(PROJECT_SOURCES
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp
   src/shaders/Compositor.cpp
+
+  src/animation/Smoother.cpp
 )
 
 set(PROJECT_INCLUDES

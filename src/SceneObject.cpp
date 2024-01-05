@@ -9,6 +9,10 @@ using namespace em;
 
 Logger SceneObject::logger("SceneObject");
 
+//----------------------------------------------------------------------------------------------
+// Transform
+//----------------------------------------------------------------------------------------------
+
 const char* Transform::rotationModeNames[] =
 {
     "EULER_XYZ",
@@ -229,6 +233,129 @@ int Transform::lua_setRotationMode(lua_State* L)
 }
 
 //----------------------------------------------------------------------------------------------
+// Dynamics
+//----------------------------------------------------------------------------------------------
+
+lua_State* Dynamics::L = nullptr;
+int Dynamics::m_nextId = 0;
+
+Dynamics::Dynamics()
+    : m_Id(m_nextId++)
+    , enabled(false)
+{
+}
+
+Dynamics::~Dynamics()
+{
+    lua_getglobal(L, "__DynamicsInstances");
+    lua_pushinteger(L, m_Id);
+    lua_pushnil(L);
+    lua_settable(L, -3);
+
+    lua_pop(L, 1);
+}
+
+void Dynamics::update(float dt)
+{
+    for(auto& smoother : smoothers)
+        smoother.second.update(dt);
+
+    lua_getglobal(L, "__DynamicsInstances");
+    lua_pushinteger(L, m_Id);
+    lua_gettable(L, -2);
+
+    lua_pushstring(L, "onUpdate");
+    lua_gettable(L, -2);
+
+    if(lua_isfunction(L, -1))
+    {
+        lua_pushnumber(L, dt);
+        lua_call(L, 1, 0);
+    }
+
+    lua_pop(L, 2);
+}
+
+#define luaGetDynamics() \
+    Dynamics* dynamics; \
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(dynamics, Dynamics, -1);
+
+int Dynamics::lua_this(lua_State* L)
+{
+    lua_newtable(L);
+    lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
+
+    luaL_newmetatable(L, "Dynamics");
+    lua_setmetatable(L, -2);
+
+    lua_getglobal(L, "__DynamicsInstances");
+    lua_pushinteger(L, m_Id);
+    lua_pushvalue(L, -3);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+
+    return 1;
+}
+
+int Dynamics::lua_openDynamicsLib(lua_State* L)
+{
+    static const luaL_Reg luaDynamicsMethods[] =
+    {
+        {"getSmoother", lua_getSmoother},
+        {"deleteSmoother", lua_deleteSmoother},
+        {"isEnabled", lua_isEnabled},
+        {nullptr, nullptr}
+    };
+
+    Dynamics::L = L;
+    Smoother::lua_openSmootherLib(L);
+
+    luaL_newmetatable(L, "Dynamics");
+    luaL_setfuncs(L, luaDynamicsMethods, 0);
+
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -2);
+    lua_settable(L, -3);
+
+    lua_setglobal(L, "Dynamics");
+
+    lua_newtable(L);
+    lua_setglobal(L, "__DynamicsInstances");
+
+    return 0;
+}
+
+int Dynamics::lua_getSmoother(lua_State* L)
+{
+    luaGetDynamics();
+    
+    const char* smootherName = luaL_checkstring(L, 2);
+    dynamics->smoothers[smootherName].lua_this(L);
+
+    return 1;
+}
+
+int Dynamics::lua_deleteSmoother(lua_State* L)
+{
+    luaGetDynamics();
+
+    const char* smootherName = luaL_checkstring(L, 2);
+    dynamics->smoothers.erase(smootherName);
+
+    return 0;
+}
+
+int Dynamics::lua_isEnabled(lua_State* L)
+{
+    luaGetDynamics();
+    lua_pushboolean(L, dynamics->enabled);
+
+    return 1;
+}
+
+//----------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------
 // SceneObject
@@ -248,6 +375,7 @@ const char* SceneObject::typeNames[] =
 SceneObject::SceneObject(Type type, const std::string& name)
     : m_type(type)
     , m_parent(nullptr)
+    , m_numChildren(0)
 {
     setName(name);
 
@@ -315,6 +443,16 @@ void SceneObject::setName(const std::string& name)
     getObjects()[newName] = this;
 }
 
+Dynamics& SceneObject::getDynamics()
+{
+    return m_dynamics;
+}
+
+const Dynamics& SceneObject::getConstDynamics() const
+{
+    return m_dynamics;
+}
+
 // Removes all chidren and parents them to this object's parent
 void SceneObject::removeAllChildren()
 {
@@ -375,6 +513,16 @@ int SceneObject::getChildCount() const
     return m_numChildren;
 }
 
+bool SceneObject::isDynamic() const
+{
+    return m_dynamics.enabled;
+}
+
+void SceneObject::setDynamic(bool dynamic)
+{
+    m_dynamics.enabled = dynamic;
+}
+
 int SceneObject::lua_this(lua_State* L)
 {
     lua_newtable(L);
@@ -383,6 +531,9 @@ int SceneObject::lua_this(lua_State* L)
     lua_settable(L, -3);
     lua_pushstring(L, "transform");
     m_transform.lua_this(L);
+    lua_settable(L, -3);
+    lua_pushstring(L, "dynamics");
+    m_dynamics.lua_this(L);
     lua_settable(L, -3);
 
     luaL_newmetatable(L, "SceneObject");
@@ -402,10 +553,13 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
         {"removeAllChildren", lua_removeAllChildren},
         {"removeChild", lua_removeChild},
         {"addChild", lua_addChild},
+        {"isDynamic", lua_isDynamic},
+        {"setDynamic", lua_setDynamic},
         {nullptr, nullptr}
     };
 
     Transform::lua_openTransformLib(L);
+    Dynamics::lua_openDynamicsLib(L);
 
     luaL_newmetatable(L, "SceneObject");
     luaL_setfuncs(L, luaSceneObjectMethods, 0);
@@ -480,6 +634,25 @@ int SceneObject::lua_addChild(lua_State* L)
     luaGetPointer(child, SceneObject, -1);
 
     object->addChild(*child);
+
+    return 0;
+}
+
+int SceneObject::lua_isDynamic(lua_State* L)
+{
+    luaGetSceneObject();
+    lua_pushboolean(L, object->isDynamic());
+
+    return 1;
+}
+
+int SceneObject::lua_setDynamic(lua_State* L)
+{
+    luaGetSceneObject();
+    bool dynamic;
+    luaGet(dynamic, bool, boolean, 2);
+
+    object->setDynamic(dynamic);
 
     return 0;
 }

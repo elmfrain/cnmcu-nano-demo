@@ -8,6 +8,8 @@
 #include <shaders/Shader.hpp>
 #include <LuaInclude.hpp>
 
+#include "animation/Smoother.hpp"
+
 #include "Logger.hpp"
 
 namespace em
@@ -59,6 +61,29 @@ namespace em
         static int lua_setRotationMode(lua_State* L);
     };
 
+    struct Dynamics
+    {
+        Dynamics();
+        ~Dynamics();
+
+        std::unordered_map<std::string, Smoother> smoothers;
+        bool enabled;
+
+        void update(float dt);
+
+        int lua_this(lua_State* L);
+        static int lua_openDynamicsLib(lua_State* L);
+    private:
+        static lua_State* L;
+        static int m_nextId;
+
+        static int lua_getSmoother(lua_State* L);
+        static int lua_deleteSmoother(lua_State* L);
+        static int lua_isEnabled(lua_State* L);
+
+        int m_Id;
+    };
+
     class SceneObject
     {
     public:
@@ -88,10 +113,16 @@ namespace em
         const Transform& getConstTransform() const;
         void setName(const std::string& name);
 
+        Dynamics& getDynamics();
+        const Dynamics& getConstDynamics() const;
+
         void removeAllChildren();
         void removeChild(SceneObject& child);
         void addChild(SceneObject& child);
         int getChildCount() const;
+
+        bool isDynamic() const;
+        void setDynamic(bool dynamic);
 
         virtual int lua_this(lua_State* L);
         static int lua_openSceneObjectLib(lua_State* L);
@@ -100,6 +131,7 @@ namespace em
         std::string m_name;
 
         Transform m_transform;
+        Dynamics m_dynamics;
 
         SceneObject* m_parent;
         int m_numChildren;
@@ -112,6 +144,9 @@ namespace em
         static int lua_removeAllChildren(lua_State* L);
         static int lua_removeChild(lua_State* L);
         static int lua_addChild(lua_State* L);
+
+        static int lua_isDynamic(lua_State* L);
+        static int lua_setDynamic(lua_State* L);
 
         static int lua_setName(lua_State* L);
     protected:

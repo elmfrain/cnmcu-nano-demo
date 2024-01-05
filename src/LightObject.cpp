@@ -55,6 +55,9 @@ int LightObject::lua_this(lua_State* L)
     lua_pushstring(L, "transform");
     getTransform().lua_this(L);
     lua_settable(L, -3);
+    lua_pushstring(L, "dynamics");
+    getDynamics().lua_this(L);
+    lua_settable(L, -3);
 
     luaL_getmetatable(L, "LightObject");
     lua_setmetatable(L, -2);

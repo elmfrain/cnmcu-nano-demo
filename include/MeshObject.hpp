@@ -12,7 +12,6 @@ namespace em
         MeshObject(const std::string& name = "MeshObject");
         virtual ~MeshObject();
 
-        virtual void update(float dt) override;
         virtual void draw(Shader& shader) override;
 
         void setMesh(Mesh::Ptr mesh);
@@ -30,5 +29,7 @@ namespace em
         static int lua_getMesh(lua_State* L);
 
         static int lua_setMesh(lua_State* L);
+    protected:
+        virtual void update(float dt) override;
     };
 }

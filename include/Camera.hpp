@@ -23,7 +23,6 @@ namespace em
         Camera(const std::string& name = "Camera");
         virtual ~Camera();
 
-        virtual void update(float dt) override;
         virtual void draw(Shader& shader) override;
 
         ProjectionMode projectionMode;
@@ -58,5 +57,7 @@ namespace em
         static int lua_setNearPlane(lua_State* L);
         static int lua_setFarPlane(lua_State* L);
         static int lua_setPerspectiveShift(lua_State* L);
+    protected:
+        virtual void update(float dt) override;
     };
 }

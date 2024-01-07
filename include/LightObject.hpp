@@ -10,7 +10,6 @@ namespace em
         LightObject(const std::string& name = "LightObject");
         virtual ~LightObject();
 
-        virtual void update(float dt) override;
         virtual void draw(Shader& shader) override;
 
         void setColor(const glm::vec3& color);
@@ -30,5 +29,7 @@ namespace em
 
         static int lua_setColor(lua_State* L);
         static int lua_setIntensity(lua_State* L);
+    protected:
+        virtual void update(float dt) override;
     };
 }

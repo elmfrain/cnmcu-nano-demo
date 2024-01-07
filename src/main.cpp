@@ -7,6 +7,9 @@ int main(int argc, char** argv)
 {
     em::AppParams options;
 
+    // options.width = 1280;
+    // options.height = 720;
+
     em::VisualizerApp application;
 
     if(!application.start(options))

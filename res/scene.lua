@@ -57,7 +57,7 @@ local lights = {
 local function initCompositorAndCamera()
   scene.compositor:setGamma(1.6)
   scene.compositor:setExposure(1.5)
-  scene.camera.transform:setPosition({0.0, 1.0, 0.0})
+  -- scene.camera.transform:setPosition({0.0, 1.0, 0.0})
   scene.camera.transform:setRotationEuler({-1.57, 0.0, 0.0})
 end
 
@@ -72,6 +72,10 @@ local function loadObjects()
     object.material:setSpecular(value.material.specular)
     if value.material.roughness then
       object.material:setRoughness(value.material.roughness)
+    end
+
+    if name == "sare" then
+      SareObject = object
     end
   end
 end
@@ -89,7 +93,27 @@ function Start()
   initCompositorAndCamera()
 
   loadObjects()
-  loadLights()  
+  loadLights()
+
+  SareObject:setDynamic(true)
+  SareObject.dynamics.time = 0.0
+  SareObject.dynamics.onUpdate = function (dt, obj)
+    obj.dynamics.time = obj.dynamics.time + dt
+    local smoother = obj.dynamics:getSmoother("smt")
+    smoother:setSpeed(3.0)
+    smoother:setDamping(4.0)
+    smoother:setSpringing(true)
+
+    if(obj.dynamics.time > 1.0) then
+      obj.dynamics.time = 0
+      obj.dynamics.dir = not obj.dynamics.dir
+      if obj.dynamics.dir then smoother:grab(0)
+      else smoother:grab(3.14) end
+    end
+
+    local y = smoother:getValue()
+    obj.transform:setRotationEuler({0.0, y, 0.0})
+  end
 end
 
 function Update(dt)

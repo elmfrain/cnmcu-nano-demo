@@ -435,6 +435,10 @@ TEST(LuaScripting, SceneObject)
 
     o.lua_this(L);
     lua_setglobal(L, "o");
+    o.lua_this(L);
+    lua_setglobal(L, "o2");
+    o.lua_this(L);
+    lua_setglobal(L, "o3");
     c1.lua_this(L);
     lua_setglobal(L, "c1");
     c2.lua_this(L);
@@ -448,10 +452,24 @@ TEST(LuaScripting, SceneObject)
     ASSERT_EQ(luaAssert(L, "o:getName() == \"TestObject\""), 0) << luaGetError("SceneObject::getName() failed");
     ASSERT_EQ(luaAssert(L, "o:getChildCount() == 2"), 0) << luaGetError("SceneObject::getChildCount() failed");
 
+    ASSERT_EQ(luaAssert(L, "o == o2"), 0) << luaGetError("SceneObject::operator==() failed");
+    ASSERT_EQ(luaAssert(L, "o == o3"), 0) << luaGetError("SceneObject::operator==() failed");
+    ASSERT_EQ(luaAssert(L, "o ~= c1"), 0) << luaGetError("SceneObject::operator==() failed");
+    ASSERT_EQ(luaAssert(L, "o ~= c2"), 0) << luaGetError("SceneObject::operator==() failed");
+
     ASSERT_EQ(luaAssert(L, "o.transform:getPosition()[1] == 10.0"), 0) << luaGetError("SceneObject::transform.getPosition()[1] failed");
     ASSERT_EQ(luaAssert(L, "o.transform:getPosition()[2] == 20.0"), 0) << luaGetError("SceneObject::transform.getPosition()[2] failed");
     ASSERT_EQ(luaAssert(L, "o.transform:getPosition()[3] == 30.0"), 0) << luaGetError("SceneObject::transform.getPosition()[3] failed");
     ASSERT_EQ(luaAssert(L, "o.dynamics:isEnabled() == true"), 0) << luaGetError("SceneObject::dynamics.isEnabled() failed");
+    ASSERT_EQ(luaAssert(L, "o:isDynamic() == true"), 0) << luaGetError("SceneObject::isDynamic() failed");
+
+    ASSERT_EQ(luaRun(L, "o.dynamics.onUpdate = function(dt, obj) obj.transform:setPosition({1.0, 2.0, dt}) end"), 0) << luaGetError("SceneObject::update() failed");
+    o.doUpdate(5.0f);
+    ASSERT_EQ(o.getTransform().position, glm::vec3(1.0f, 2.0f, 5.0f)) << "SceneObject::update() failed";
+
+    o.setDynamic(false);
+    o.doUpdate(10.0f);
+    ASSERT_EQ(o.getTransform().position, glm::vec3(1.0f, 2.0f, 5.0f)) << "SceneObject::update() failed";
 
     ASSERT_EQ(luaRun(L, "o:setName(\"TestObject2\")"), 0) << luaGetError("SceneObject::setName() failed");
     ASSERT_STREQ(o.getName().c_str(), "TestObject2") << "SceneObject::setName() failed";
@@ -464,6 +482,9 @@ TEST(LuaScripting, SceneObject)
 
     ASSERT_EQ(luaRun(L, "o:removeAllChildren()"), 0) << luaGetError("SceneObject::removeAllChildren() failed");
     ASSERT_EQ(o.getChildCount(), 0) << "SceneObject::removeAllChildren() failed";
+
+    ASSERT_EQ(luaRun(L, "o:setDynamic(true)"), 0) << luaGetError("SceneObject::setDynamic() failed");
+    ASSERT_EQ(o.isDynamic(), true) << "SceneObject::setDynamic() failed";
 
     }
 
@@ -486,15 +507,23 @@ TEST(LuaScripting, LightObject)
 
     l.lua_this(L);
     lua_setglobal(L, "l");
+    l.lua_this(L);
+    lua_setglobal(L, "l2");
 
     ASSERT_EQ(luaRun(L, "assert(getmetatable(l).__name == 'LightObject')"), 0) << luaGetError("LightObject metatable name assertion failed");
 
     ASSERT_EQ(luaAssert(L, "l:getType() == \"LIGHT\""), 0) << luaGetError("LightObject::getType() failed");
 
+    ASSERT_EQ(luaAssert(L, "l == l2"), 0) << luaGetError("SceneObject::operator==() failed");
+
     ASSERT_EQ(luaAssert(L, "l.transform:getPosition()[1] == 10.0"), 0) << luaGetError("LightObject::transform.getPosition()[1] failed");
     ASSERT_EQ(luaAssert(L, "l.transform:getPosition()[2] == 20.0"), 0) << luaGetError("LightObject::transform.getPosition()[2] failed");
     ASSERT_EQ(luaAssert(L, "l.transform:getPosition()[3] == 30.0"), 0) << luaGetError("LightObject::transform.getPosition()[3] failed");
     ASSERT_EQ(luaAssert(L, "l.dynamics:isEnabled() == true"), 0) << luaGetError("LightObject::dynamics.isEnabled() failed");
+
+    ASSERT_EQ(luaRun(L, "l.dynamics.onUpdate = function(dt, obj) obj.transform:setPosition({1.0, 2.0, dt}) end"), 0) << luaGetError("LightObject::update() failed");
+    l.doUpdate(5.0f);
+    ASSERT_EQ(l.getTransform().position, glm::vec3(1.0f, 2.0f, 5.0f)) << "LightObject::update() failed";
 
     ASSERT_EQ(luaAssert(L, "l:getColor()[1] == 40.0"), 0) << luaGetError("LightObject::getColor()[1] failed");
     ASSERT_EQ(luaAssert(L, "l:getColor()[2] == 50.0"), 0) << luaGetError("LightObject::getColor()[2] failed");
@@ -537,6 +566,8 @@ TEST(LuaScripting, MeshObject)
 
     m.lua_this(L);
     lua_setglobal(L, "m");
+    m.lua_this(L);
+    lua_setglobal(L, "m2");
     luaPushSharedPtr<Mesh>(L, mesh2, "MeshPtr"); 
     lua_setglobal(L, "meshPtr2");
 
@@ -544,10 +575,16 @@ TEST(LuaScripting, MeshObject)
 
     ASSERT_EQ(luaAssert(L, "m:getType() == \"MESH\""), 0) << luaGetError("MeshObject::getType() failed");
 
+    ASSERT_EQ(luaAssert(L, "m == m2"), 0) << luaGetError("SceneObject::operator==() failed");
+
     ASSERT_EQ(luaAssert(L, "m.transform:getPosition()[1] == 40.0"), 0) << luaGetError("MeshObject::transform.getPosition()[1] failed");
     ASSERT_EQ(luaAssert(L, "m.transform:getPosition()[2] == 50.0"), 0) << luaGetError("MeshObject::transform.getPosition()[2] failed");
     ASSERT_EQ(luaAssert(L, "m.transform:getPosition()[3] == 60.0"), 0) << luaGetError("MeshObject::transform.getPosition()[3] failed");
     ASSERT_EQ(luaAssert(L, "m.dynamics:isEnabled() == true"), 0) << luaGetError("MeshObject::dynamics.isEnabled() failed");
+
+    ASSERT_EQ(luaRun(L, "m.dynamics.onUpdate = function(dt, obj) obj.transform:setPosition({1.0, 2.0, dt}) end"), 0) << luaGetError("MeshObject::update() failed");
+    m.doUpdate(5.0f);
+    ASSERT_EQ(m.getTransform().position, glm::vec3(1.0f, 2.0f, 5.0f)) << "MeshObject::update() failed";
 
     ASSERT_EQ(luaRun(L, "meshPtr1 = m:getMesh()"), 0) << luaGetError("MeshObject::getMesh() failed");
     lua_getglobal(L, "meshPtr1");
@@ -588,15 +625,23 @@ TEST(LuaScripting, Camera)
 
     c.lua_this(L);
     lua_setglobal(L, "c");
+    c.lua_this(L);
+    lua_setglobal(L, "c2");
 
     ASSERT_EQ(luaRun(L, "assert(getmetatable(c).__name == 'Camera')"), 0) << luaGetError("Camera metatable name assertion failed");
 
     ASSERT_EQ(luaAssert(L, "c:getType() == \"CAMERA\""), 0) << luaGetError("Camera::getType() failed");
 
+    ASSERT_EQ(luaAssert(L, "c == c2"), 0) << luaGetError("SceneObject::operator==() failed");
+
     ASSERT_EQ(luaAssert(L, "c.transform:getPosition()[1] == 10.0"), 0) << luaGetError("Camera::transform.getPosition()[1] failed");
     ASSERT_EQ(luaAssert(L, "c.transform:getPosition()[2] == 20.0"), 0) << luaGetError("Camera::transform.getPosition()[2] failed");
     ASSERT_EQ(luaAssert(L, "c.transform:getPosition()[3] == 30.0"), 0) << luaGetError("Camera::transform.getPosition()[3] failed");
     ASSERT_EQ(luaAssert(L, "c.dynamics:isEnabled() == true"), 0) << luaGetError("Camera::dynamics.isEnabled() failed");
+
+    ASSERT_EQ(luaRun(L, "c.dynamics.onUpdate = function(dt, obj) obj.transform:setPosition({1.0, 2.0, dt}) end"), 0) << luaGetError("Camera::update() failed");
+    c.doUpdate(5.0f);
+    ASSERT_EQ(c.getTransform().position, glm::vec3(1.0f, 2.0f, 5.0f)) << "Camera::update() failed";
 
     ASSERT_EQ(luaAssert(L, "c:getProjectionMode() == \"ORTHOGRAPHIC\""), 0) << luaGetError("Camera::getProjectionMode() failed");
 

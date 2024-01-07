@@ -61,6 +61,8 @@ namespace em
         static int lua_setRotationMode(lua_State* L);
     };
 
+    class SceneObject;
+
     struct Dynamics
     {
         Dynamics();
@@ -69,7 +71,7 @@ namespace em
         std::unordered_map<std::string, Smoother> smoothers;
         bool enabled;
 
-        void update(float dt);
+        void update(float dt, SceneObject* parent = nullptr);
 
         int lua_this(lua_State* L);
         static int lua_openDynamicsLib(lua_State* L);
@@ -104,7 +106,7 @@ namespace em
         SceneObject(const SceneObject& other) = delete;
         SceneObject& operator=(const SceneObject& other) = delete;
 
-        virtual void update(float dt) = 0;
+        void doUpdate(float dt);
         virtual void draw(Shader& shader) = 0;
 
         Type getType() const;
@@ -137,6 +139,9 @@ namespace em
         int m_numChildren;
         std::forward_list<SceneObject*> m_children;
 
+        static int m_nextId;
+        static lua_State* L;
+
         static int lua_getName(lua_State* L);
         static int lua_getType(lua_State* L);
         static int lua_getChildCount(lua_State* L);
@@ -150,6 +155,12 @@ namespace em
 
         static int lua_setName(lua_State* L);
     protected:
+        int m_Id;
+
+        virtual void update(float dt) = 0;
+
+        static bool hasLuaInstance(int id);
+        static void registerLuaInstance(int id);
         static std::unordered_map<std::string, SceneObject*>& getObjects();
         static const char* getRootName();
         static Logger logger;

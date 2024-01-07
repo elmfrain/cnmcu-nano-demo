@@ -251,11 +251,10 @@ Dynamics::~Dynamics()
     lua_pushinteger(L, m_Id);
     lua_pushnil(L);
     lua_settable(L, -3);
-
     lua_pop(L, 1);
 }
 
-void Dynamics::update(float dt)
+void Dynamics::update(float dt, SceneObject* parent)
 {
     for(auto& smoother : smoothers)
         smoother.second.update(dt);
@@ -270,7 +269,13 @@ void Dynamics::update(float dt)
     if(lua_isfunction(L, -1))
     {
         lua_pushnumber(L, dt);
-        lua_call(L, 1, 0);
+
+        if(parent)
+        {
+            parent->lua_this(L);
+            lua_call(L, 2, 0);
+        }
+        else lua_call(L, 1, 0);
     }
 
     lua_pop(L, 2);
@@ -372,10 +377,14 @@ const char* SceneObject::typeNames[] =
     "ROOT"
 };
 
+lua_State* SceneObject::L = nullptr;
+int SceneObject::m_nextId = 0;
+
 SceneObject::SceneObject(Type type, const std::string& name)
     : m_type(type)
     , m_parent(nullptr)
     , m_numChildren(0)
+    , m_Id(m_nextId++)
 {
     setName(name);
 
@@ -397,6 +406,23 @@ SceneObject::~SceneObject()
         m_parent->removeChild(*this);
 
     getObjects().erase(m_name);
+
+    lua_getglobal(L, "__SceneObjectInstances");
+    lua_pushinteger(L, m_Id);
+    lua_pushnil(L);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+}
+
+void SceneObject::doUpdate(float dt)
+{
+    if(m_name == getRootName())
+        return;
+
+    if(m_dynamics.enabled)
+        m_dynamics.update(dt, this);
+
+    update(dt);
 }
 
 SceneObject::Type SceneObject::getType() const
@@ -525,6 +551,8 @@ void SceneObject::setDynamic(bool dynamic)
 
 int SceneObject::lua_this(lua_State* L)
 {
+    if(hasLuaInstance(m_Id)) return 1;
+
     lua_newtable(L);
     lua_pushstring(L, "ptr");
     lua_pushlightuserdata(L, this);
@@ -538,6 +566,8 @@ int SceneObject::lua_this(lua_State* L)
 
     luaL_newmetatable(L, "SceneObject");
     lua_setmetatable(L, -2);
+
+    registerLuaInstance(m_Id);
 
     return 1;
 }
@@ -558,6 +588,8 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
         {nullptr, nullptr}
     };
 
+    SceneObject::L = L;
+
     Transform::lua_openTransformLib(L);
     Dynamics::lua_openDynamicsLib(L);
 
@@ -569,6 +601,9 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
     lua_settable(L, -3);
 
     lua_setglobal(L, "SceneObject");
+
+    lua_newtable(L);
+    lua_setglobal(L, "__SceneObjectInstances");
 
     LightObject::lua_openLightObjectLib(L);
     MeshObject::lua_openMeshObjectLib(L);
@@ -665,6 +700,28 @@ int SceneObject::lua_setName(lua_State* L)
     object->setName(name);
 
     return 0;
+}
+
+bool SceneObject::hasLuaInstance(int id)
+{
+    lua_getglobal(L, "__SceneObjectInstances");
+    lua_pushinteger(L, id);
+    lua_gettable(L, -2);
+    bool hasInstance = !lua_isnil(L, -1);
+    
+    if(hasInstance) lua_remove(L, -2);
+    else lua_pop(L, 2);
+
+    return hasInstance;
+}
+
+void SceneObject::registerLuaInstance(int id)
+{
+    lua_getglobal(L, "__SceneObjectInstances");
+    lua_pushinteger(L, id);
+    lua_pushvalue(L, -3);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
 }
 
 std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()

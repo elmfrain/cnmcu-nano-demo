@@ -48,6 +48,8 @@ float LightObject::getIntensity() const
 
 int LightObject::lua_this(lua_State* L)
 {
+    if(hasLuaInstance(m_Id)) return 1;
+
     lua_newtable(L);
     lua_pushstring(L, "ptr");
     lua_pushlightuserdata(L, this);
@@ -61,6 +63,8 @@ int LightObject::lua_this(lua_State* L)
 
     luaL_getmetatable(L, "LightObject");
     lua_setmetatable(L, -2);
+
+    registerLuaInstance(m_Id);
 
     return 1;
 }

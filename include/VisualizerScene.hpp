@@ -27,7 +27,7 @@ namespace em
         void onWindowResize(int width, int height);
 
     private:
-        Camera mainCamera;
+        std::unique_ptr<Camera> mainCamera;
         Framebuffer framebuffer;
         PhongShader phongShader;
         Compositor compositor;

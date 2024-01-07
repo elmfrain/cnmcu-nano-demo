@@ -89,7 +89,6 @@ static void rotateCamera(Camera& camera, float dt)
 
 VisualizerScene::VisualizerScene()
 {
-    mainCamera.setName("main-camera");
     logger = Logger("VisualizerScene");
     host = this;
 }
@@ -107,7 +106,9 @@ void VisualizerScene::init()
 
     compositor.init();
 
-    mainCamera.getTransform().position.z = -2.0f;
+    mainCamera = std::make_unique<Camera>();
+    mainCamera->setName("main-camera");
+    mainCamera->getTransform().position.z = -2.0f;
 
     initLua();
     initFromLua();
@@ -133,9 +134,15 @@ void VisualizerScene::reload()
 
 void VisualizerScene::update(float dt)
 {
-    moveCamera(mainCamera, dt);
-    rotateCamera(mainCamera, dt);
+    moveCamera(*mainCamera, dt);
+    rotateCamera(*mainCamera, dt);
     updateFromLua(dt);
+
+    for(auto&lights : lights)
+        lights.second->doUpdate(dt);
+
+    for(auto& object : objects)
+        object.second->doUpdate(dt);
 }
 
 void VisualizerScene::draw()
@@ -144,8 +151,8 @@ void VisualizerScene::draw()
     glViewport(0, 0, windowSize.x, windowSize.y);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    phongShader.setProjectionMatrix(mainCamera.getViewProjectionMatrix());
-    phongShader.setCameraPos(mainCamera.getTransform().position);
+    phongShader.setProjectionMatrix(mainCamera->getViewProjectionMatrix());
+    phongShader.setCameraPos(mainCamera->getTransform().position);
     phongShader.setLightCount(lights.size());
     int i = 0;
     for(auto it = lights.begin(); it != lights.end(); ++it)
@@ -175,6 +182,8 @@ void VisualizerScene::destroy()
     phongShader.destroy();
 
     compositor.destroy();
+
+    mainCamera.reset();
 
     destroyObjectsAndLights();
 
@@ -285,7 +294,7 @@ int VisualizerScene::lua_openSceneLib(lua_State* L)
     host->compositor.lua_this(L);
     lua_settable(L, -3);
     lua_pushstring(L, "camera");
-    host->mainCamera.lua_this(L);
+    host->mainCamera->lua_this(L);
     lua_settable(L, -3);
     lua_pop(L, 1);
 

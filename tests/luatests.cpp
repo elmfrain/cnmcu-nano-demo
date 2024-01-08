@@ -242,8 +242,12 @@ TEST(LuaScripting, Smoother)
 
     s.lua_this(L);
     lua_setglobal(L, "s");
+    s.lua_this(L);
+    lua_setglobal(L, "s2");
 
     ASSERT_EQ(luaRun(L, "assert(getmetatable(s).__name == 'Smoother')"), 0) << luaGetError("Smoother metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "s == s2"), 0) << luaGetError("Smoother::operator==() failed");
 
     ASSERT_EQ(luaAssert(L, "s:getValue() == 30.0"), 0) << luaGetError("Smoother::getValue() failed");
     ASSERT_EQ(luaAssert(L, "s:getTarget() == 40.0"), 0) << luaGetError("Smoother::getTarget() failed");

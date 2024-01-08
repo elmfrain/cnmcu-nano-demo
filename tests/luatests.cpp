@@ -233,6 +233,8 @@ TEST(LuaScripting, Smoother)
     luaL_openlibs(L);
     Smoother::lua_openSmootherLib(L);
 
+    { // Runtime scope
+
     Smoother s;
     s.setSpeed(10.0f);
     s.setDamping(20.0f);
@@ -278,6 +280,8 @@ TEST(LuaScripting, Smoother)
     ASSERT_EQ(luaRun(L, "s:setValueAndGrab(80.0)"), 0) << luaGetError("Smoother::setValueAndGrab() failed");
     ASSERT_EQ(s.getValue(), 80.0f) << "Smoother::setValueAndGrab() failed";
     ASSERT_EQ(s.getTarget(), 80.0f) << "Smoother::setValueAndGrab() failed";
+
+    }
 
     lua_close(L);
 }

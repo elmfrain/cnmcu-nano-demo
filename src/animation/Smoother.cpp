@@ -4,6 +4,8 @@
 
 using namespace em;
 
+lua_State* Smoother::L = nullptr;
+
 Smoother::Smoother()
     : m_value(0.0f)
     , m_target(0.0f)
@@ -14,6 +16,17 @@ Smoother::Smoother()
     , m_grabbed(false)
     , m_springing(false)
 {
+    static int nextId = 0;
+    m_Id = nextId++;
+}
+
+Smoother::~Smoother()
+{
+    lua_getglobal(L, "__SmootherInstances");
+    lua_pushinteger(L, m_Id);
+    lua_pushnil(L);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
 }
 
 void Smoother::grab()
@@ -116,12 +129,16 @@ void Smoother::update(float delta)
 
 int Smoother::lua_this(lua_State* L)
 {
+    if(hasLuaInstance(L, m_Id)) return 1;
+
     lua_newtable(L);
     lua_pushlightuserdata(L, this);
     lua_setfield(L, -2, "ptr");
 
     luaL_newmetatable(L, "Smoother");
     lua_setmetatable(L, -2);
+
+    registerLuaInstance(L, m_Id);
 
     return 1;
 }
@@ -147,6 +164,8 @@ int Smoother::lua_openSmootherLib(lua_State* L)
         { NULL, NULL }
     };
 
+    Smoother::L = L;
+
     luaL_newmetatable(L, "Smoother");
     luaL_setfuncs(L, luaSmootherMethods, 0);
 
@@ -154,6 +173,9 @@ int Smoother::lua_openSmootherLib(lua_State* L)
     lua_setfield(L, -2, "__index");
 
     lua_setglobal(L, "Smoother");
+
+    lua_newtable(L);
+    lua_setglobal(L, "__SmootherInstances");
 
     return 0;
 }
@@ -244,4 +266,26 @@ int Smoother::lua_setValueAndGrab(lua_State* L)
     luaGet(value, float, number, 2);
     smoother->setValueAndGrab(value);
     return 0;
+}
+
+bool Smoother::hasLuaInstance(lua_State* L, int id)
+{
+    lua_getglobal(L, "__SmootherInstances");
+    lua_pushinteger(L, id);
+    lua_gettable(L, -2);
+    bool hasInstance = !lua_isnil(L, -1);
+
+    if(hasInstance) lua_remove(L, -2);
+    else lua_pop(L, 2);
+
+    return hasInstance;
+}
+
+void Smoother::registerLuaInstance(lua_State* L, int id)
+{
+    lua_getglobal(L, "__SmootherInstances");
+    lua_pushinteger(L, id);
+    lua_pushvalue(L, -3);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
 }

@@ -8,6 +8,7 @@ namespace em
     {
     public:
         Smoother();
+        ~Smoother();
 
         void grab();
         void grab(float value);
@@ -32,6 +33,8 @@ namespace em
         int lua_this(lua_State* L);
         static int lua_openSmootherLib(lua_State* L);
     private:
+        int m_Id;
+
         float m_value;
         float m_target;
         float m_speed;
@@ -56,5 +59,9 @@ namespace em
         static int lua_grab(lua_State* L);
         static int lua_release(lua_State* L);
         static int lua_setValueAndGrab(lua_State* L);
+
+        static lua_State* L;
+        static bool hasLuaInstance(lua_State* L, int id);
+        static void registerLuaInstance(lua_State* L, int id);
     };
 }

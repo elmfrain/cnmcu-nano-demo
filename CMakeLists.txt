@@ -38,6 +38,7 @@ set(PROJECT_SOURCES
 
   src/animation/Smoother.cpp
   src/animation/Easing.cpp
+  src/animation/Track.cpp
 )
 
 set(PROJECT_INCLUDES

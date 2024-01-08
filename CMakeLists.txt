@@ -37,6 +37,7 @@ set(PROJECT_SOURCES
   src/shaders/Compositor.cpp
 
   src/animation/Smoother.cpp
+  src/animation/Easing.cpp
 )
 
 set(PROJECT_INCLUDES

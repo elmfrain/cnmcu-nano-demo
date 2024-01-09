@@ -28,6 +28,7 @@ namespace em
 
         float getValue(float time) const;
         const char* getName() const;
+        size_t getKeyframesCount() const;
     private:
         char name[32];
 

@@ -9,6 +9,9 @@ Track::Track(const char* name)
 {
     memset(this->name, 0, 32);
     strncpy(this->name, name, 31);
+
+    addKeyframe(0.0f, 0.0f);
+    addKeyframe(1.0f, 0.0f);
 }
 
 Track::Track(const char* name, float value)
@@ -60,6 +63,8 @@ void Track::addKeyframe(const Keyframe& keyframe)
             return;
         }
 
+    keyframes[keyframesCount++] = keyframe;
+
     sortKeyframes();
 }
 
@@ -91,6 +96,11 @@ float Track::getValue(float time) const
 const char* Track::getName() const
 {
     return name;
+}
+
+size_t Track::getKeyframesCount() const
+{
+    return keyframesCount;
 }
 
 void Track::sortKeyframes()

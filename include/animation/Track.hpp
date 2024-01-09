@@ -17,6 +17,7 @@ namespace em
     class Track
     {
     public:
+        Track();
         Track(const char* name);
         Track(const char* name, float value);
         Track(const char* name, const std::vector<Keyframe>& keyframes);

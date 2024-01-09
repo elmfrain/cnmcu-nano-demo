@@ -2,8 +2,18 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cstdio>
 
 using namespace em;
+
+Track::Track()
+{
+    memset(this->name, 0, 32);
+    snprintf(this->name, 31, "Track %p", this);
+
+    addKeyframe(0.0f, 0.0f);
+    addKeyframe(1.0f, 0.0f);
+}
 
 Track::Track(const char* name)
 {

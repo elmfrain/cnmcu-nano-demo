@@ -80,6 +80,7 @@ add_executable(${TESTER}
 
   tests/test.cpp
   tests/luatests.cpp
+  tests/animationtests.cpp
 )
 
 target_include_directories(${TESTER} PRIVATE ${PROJECT_INCLUDES})

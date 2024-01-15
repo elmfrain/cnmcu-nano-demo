@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstddef>
 
+#include <LuaInclude.hpp>
+
 namespace em
 {
     struct Keyframe
@@ -12,9 +14,21 @@ namespace em
         float time = 0.0f; // normalized time
         float value = 0.0f;
         Easing::Function easing = Easing::linear;
+        LuaIndexable<Keyframe> luaIndexable;
+
+        int lua_this(lua_State* L);
+        static int lua_openKeyframeLib(lua_State* L);
+    private:
+        static int lua_getTime(lua_State* L);
+        static int lua_getValue(lua_State* L);
+        static int lua_getEasing(lua_State* L);
+
+        static int lua_setTime(lua_State* L);
+        static int lua_setValue(lua_State* L);
+        static int lua_setEasing(lua_State* L);
     };
 
-    class Track
+    class Track : private LuaIndexable<Track>
     {
     public:
         Track();
@@ -30,7 +44,11 @@ namespace em
         float getValue(float time) const;
         const char* getName() const;
         size_t getKeyframesCount() const;
+
+        int lua_this(lua_State* L);
+        static int lua_openTrackLib(lua_State* L);
     private:
+
         char name[32];
 
         std::array<Keyframe, 8> keyframesSmallList;
@@ -44,5 +62,11 @@ namespace em
 
         void sortKeyframes();
         void findKeyframes(float time) const;
+
+        static int lua_getName(lua_State* L);
+        static int lua_getKeyframesCount(lua_State* L);
+        static int lua_getValue(lua_State* L);
+
+        static int lua_addKeyframe(lua_State* L);
     };
 }

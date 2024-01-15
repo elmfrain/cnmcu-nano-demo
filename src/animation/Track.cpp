@@ -6,6 +6,100 @@
 
 using namespace em;
 
+#define luaGetKeyframe() \
+    Keyframe* keyframe = nullptr; \
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(keyframe, Keyframe, -1); \
+
+int Keyframe::lua_this(lua_State* L)
+{
+    if(luaIndexable.hasLuaInstance(L))
+        return 1;
+
+    lua_newtable(L);
+    lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
+
+    luaL_newmetatable(L, "Keyframe");
+    lua_setmetatable(L, -2);
+
+    luaIndexable.luaRegisterInstance(L);
+
+    return 1;
+}
+
+int Keyframe::lua_openKeyframeLib(lua_State* L)
+{
+    luaL_Reg keyframeMethods[] =
+    {
+        { "getTime", lua_getTime },
+        { "getValue", lua_getValue },
+        { "getEasing", lua_getEasing },
+        { "setTime", lua_setTime },
+        { "setValue", lua_setValue },
+        { "setEasing", lua_setEasing },
+        { nullptr, nullptr }
+    };
+
+    luaL_newmetatable(L, "Keyframe");
+    luaL_setfuncs(L, keyframeMethods, 0);
+
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    lua_setglobal(L, "Keyframe");
+
+    LuaIndexable<Keyframe>::luaRegisterType(L);
+
+    return 1;
+}
+
+int Keyframe::lua_getTime(lua_State* L)
+{
+    luaGetKeyframe();
+    lua_pushnumber(L, keyframe->time);
+    return 1;
+}
+
+int Keyframe::lua_getValue(lua_State* L)
+{
+    luaGetKeyframe();
+    lua_pushnumber(L, keyframe->value);
+    return 1;
+}
+
+int Keyframe::lua_getEasing(lua_State* L)
+{
+    luaGetKeyframe();
+    lua_pushstring(L, Easing::getEasingFunctionName(keyframe->easing));
+    return 1;
+}
+
+int Keyframe::lua_setTime(lua_State* L)
+{
+    luaGetKeyframe();
+    keyframe->time = static_cast<float>(luaL_checknumber(L, 2));
+    return 0;
+}
+
+int Keyframe::lua_setValue(lua_State* L)
+{
+    luaGetKeyframe();
+    keyframe->value = static_cast<float>(luaL_checknumber(L, 2));
+    return 0;
+}
+
+int Keyframe::lua_setEasing(lua_State* L)
+{
+    luaGetKeyframe();
+    keyframe->easing = Easing::getEasingFunction(luaL_checkstring(L, 2));
+    return 0;
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------------
+// Track
+// -----------------------------------------------------------------------------------------------------------------------------------
+
 Track::Track()
 {
     memset(this->name, 0, 32);
@@ -80,7 +174,12 @@ void Track::addKeyframe(const Keyframe& keyframe)
 
 void Track::addKeyframe(float time, float value, Easing::Function easing)
 {
-    addKeyframe({ time, value, easing });
+    Keyframe keyframe;
+    keyframe.time = time;
+    keyframe.value = value;
+    keyframe.easing = easing;
+
+    addKeyframe(keyframe);
 }
 
 void Track::addKeyframes(const std::vector<Keyframe>& keyframes)
@@ -113,6 +212,49 @@ size_t Track::getKeyframesCount() const
     return keyframesCount;
 }
 
+int Track::lua_this(lua_State* L)
+{
+    if(hasLuaInstance(L))
+        return 1;
+
+    lua_newtable(L);
+    lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
+
+    luaL_newmetatable(L, "Track");
+    lua_setmetatable(L, -2);
+
+    luaRegisterInstance(L);
+
+    return 1;
+}
+
+int Track::lua_openTrackLib(lua_State* L)
+{
+    luaL_Reg trackMethods[] =
+    {
+        { "getName", lua_getName },
+        { "getKeyframesCount", lua_getKeyframesCount },
+        { "getValue", lua_getValue },
+        { "addKeyframe", lua_addKeyframe },
+        { nullptr, nullptr }
+    };
+
+    luaL_newmetatable(L, "Track");
+    luaL_setfuncs(L, trackMethods, 0);
+
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    lua_setglobal(L, "Track");
+
+    LuaIndexable<Track>::luaRegisterType(L);
+
+    Keyframe::lua_openKeyframeLib(L);
+
+    return 1;
+}
+
 void Track::sortKeyframes()
 {
     std::sort(keyframes, keyframes + keyframesCount, [](const Keyframe& a, const Keyframe& b) { return a.time < b.time; });
@@ -143,4 +285,48 @@ void Track::findKeyframes(float time) const
             return;
         }
     }
+}
+
+#define luaGetTrack() \
+    Track* track = nullptr; \
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(track, Track, -1);
+
+int Track::lua_getName(lua_State* L)
+{
+    luaGetTrack();
+    lua_pushstring(L, track->getName());
+    return 1;
+}
+
+int Track::lua_getKeyframesCount(lua_State* L)
+{
+    luaGetTrack();
+    lua_pushinteger(L, track->getKeyframesCount());
+    return 1;
+}
+
+int Track::lua_getValue(lua_State* L)
+{
+    luaGetTrack();
+    lua_pushnumber(L, track->getValue(static_cast<float>(luaL_checknumber(L, 2))));
+    return 1;
+}
+
+int Track::lua_addKeyframe(lua_State* L)
+{
+    luaGetTrack();
+    if (lua_istable(L, 2))
+    {
+        luaPushValueFromKey("time", 2);
+        luaPushValueFromKey("value", 2);
+        luaPushValueFromKey("easing", 2);
+        track->addKeyframe(static_cast<float>(luaL_checknumber(L, -3)), static_cast<float>(luaL_checknumber(L, -2)), Easing::getEasingFunction(luaL_checkstring(L, -1)));
+    }
+    else if(lua_gettop(L) == 4)
+        track->addKeyframe(static_cast<float>(luaL_checknumber(L, 2)), static_cast<float>(luaL_checknumber(L, 3)), Easing::getEasingFunction(luaL_checkstring(L, 4)));
+    else
+        track->addKeyframe(static_cast<float>(luaL_checknumber(L, 2)), static_cast<float>(luaL_checknumber(L, 3)));
+
+    return 0;
 }

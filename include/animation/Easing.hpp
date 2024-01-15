@@ -63,5 +63,6 @@ namespace em
         static float smoothStep(float x);
 
         static Function getEasingFunction(const char* name);
+        static const char* getEasingFunctionName(Function easingFunction);
     };
 }

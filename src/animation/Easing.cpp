@@ -291,49 +291,49 @@ Easing::Function Easing::getEasingFunction(const char* name)
 {
     static std::unordered_map<std::string, Easing::Function> easingFunctions =
     {
-        { "linear", Easing::linear },
-        { "instant", Easing::instant },
-        { "sineIn", Easing::sineIn },
-        { "sineOut", Easing::sineOut },
-        { "sineInOut", Easing::sineInOut },
-        { "sineOutIn", Easing::sineOutIn },
-        { "quadIn", Easing::quadIn },
-        { "quadOut", Easing::quadOut },
-        { "quadInOut", Easing::quadInOut },
-        { "quadOutIn", Easing::quadOutIn },
-        { "cubicIn", Easing::cubicIn },
-        { "cubicOut", Easing::cubicOut },
-        { "cubicInOut", Easing::cubicInOut },
-        { "cubicOutIn", Easing::cubicOutIn },
-        { "quartIn", Easing::quartIn },
-        { "quartOut", Easing::quartOut },
-        { "quartInOut", Easing::quartInOut },
-        { "quartOutIn", Easing::quartOutIn },
-        { "quintIn", Easing::quintIn },
-        { "quintOut", Easing::quintOut },
-        { "quintInOut", Easing::quintInOut },
-        { "quintOutIn", Easing::quintOutIn },
-        { "expoIn", Easing::expoIn },
-        { "expoOut", Easing::expoOut },
-        { "expoInOut", Easing::expoInOut },
-        { "expoOutIn", Easing::expoOutIn },
-        { "circIn", Easing::circIn },
-        { "circOut", Easing::circOut },
-        { "circInOut", Easing::circInOut },
-        { "circOutIn", Easing::circOutIn },
-        { "backIn", Easing::backIn },
-        { "backOut", Easing::backOut },
-        { "backInOut", Easing::backInOut },
-        { "backOutIn", Easing::backOutIn },
-        { "elasticIn", Easing::elasticIn },
-        { "elasticOut", Easing::elasticOut },
-        { "elasticInOut", Easing::elasticInOut },
-        { "elasticOutIn", Easing::elasticOutIn },
-        { "bounceIn", Easing::bounceIn },
-        { "bounceOut", Easing::bounceOut },
-        { "bounceInOut", Easing::bounceInOut },
-        { "bounceOutIn", Easing::bounceOutIn },
-        { "smoothStep", Easing::smoothStep }
+        { "LINEAR", Easing::linear },
+        { "INSTANT", Easing::instant },
+        { "SINE_IN", Easing::sineIn },
+        { "SINE_OUT", Easing::sineOut },
+        { "SINE_INOUT", Easing::sineInOut },
+        { "SINE_OUTIN", Easing::sineOutIn },
+        { "QUAD_IN", Easing::quadIn },
+        { "QUAD_OUT", Easing::quadOut },
+        { "QUAD_INOUT", Easing::quadInOut },
+        { "QUAD_OUTIN", Easing::quadOutIn },
+        { "CUBIC_IN", Easing::cubicIn },
+        { "CUBIC_OUT", Easing::cubicOut },
+        { "CUBIC_INOUT", Easing::cubicInOut },
+        { "CUBIC_OUTIN", Easing::cubicOutIn },
+        { "QUART_IN", Easing::quartIn },
+        { "QUART_OUT", Easing::quartOut },
+        { "QUART_INOUT", Easing::quartInOut },
+        { "QUART_OUTIN", Easing::quartOutIn },
+        { "QUINT_IN", Easing::quintIn },
+        { "QUINT_OUT", Easing::quintOut },
+        { "QUINT_INOUT", Easing::quintInOut },
+        { "QUINT_OUTIN", Easing::quintOutIn },
+        { "EXPO_IN", Easing::expoIn },
+        { "EXPO_OUT", Easing::expoOut },
+        { "EXPO_INOUT", Easing::expoInOut },
+        { "EXPO_OUTIN", Easing::expoOutIn },
+        { "CIRC_IN", Easing::circIn },
+        { "CIRC_OUT", Easing::circOut },
+        { "CIRC_INOUT", Easing::circInOut },
+        { "CIRC_OUTIN", Easing::circOutIn },
+        { "BACK_IN", Easing::backIn },
+        { "BACK_OUT", Easing::backOut },
+        { "BACK_INOUT", Easing::backInOut },
+        { "BACK_OUTIN", Easing::backOutIn },
+        { "ELASTIC_IN", Easing::elasticIn },
+        { "ELASTIC_OUT", Easing::elasticOut },
+        { "ELASTIC_INOUT", Easing::elasticInOut },
+        { "ELASTIC_OUTIN", Easing::elasticOutIn },
+        { "BOUNCE_IN", Easing::bounceIn },
+        { "BOUNCE_OUT", Easing::bounceOut },
+        { "BOUNCE_INOUT", Easing::bounceInOut },
+        { "BOUNCE_OUTIN", Easing::bounceOutIn },
+        { "SMOOTHSTEP", Easing::smoothStep }
     };
 
     auto it = easingFunctions.find(name);
@@ -341,5 +341,62 @@ Easing::Function Easing::getEasingFunction(const char* name)
     if (it != easingFunctions.end())
         return it->second;
             
-    return nullptr;
+    return Easing::linear;
+}
+
+const char* Easing::getEasingFunctionName(Easing::Function easingFunction)
+{
+    static std::unordered_map<Easing::Function, const char*> easingFunctionNames =
+    {
+        { Easing::linear, "LINEAR" },
+        { Easing::instant, "INSTANT" },
+        { Easing::sineIn, "SINE_IN" },
+        { Easing::sineOut, "SINE_OUT" },
+        { Easing::sineInOut, "SINE_INOUT" },
+        { Easing::sineOutIn, "SINE_OUTIN" },
+        { Easing::quadIn, "QUAD_IN" },
+        { Easing::quadOut, "QUAD_OUT" },
+        { Easing::quadInOut, "QUAD_INOUT" },
+        { Easing::quadOutIn, "QUAD_OUTIN" },
+        { Easing::cubicIn, "CUBIC_IN" },
+        { Easing::cubicOut, "CUBIC_OUT" },
+        { Easing::cubicInOut, "CUBIC_INOUT" },
+        { Easing::cubicOutIn, "CUBIC_OUTIN" },
+        { Easing::quartIn, "QUART_IN" },
+        { Easing::quartOut, "QUART_OUT" },
+        { Easing::quartInOut, "QUART_INOUT" },
+        { Easing::quartOutIn, "QUART_OUTIN" },
+        { Easing::quintIn, "QUINT_IN" },
+        { Easing::quintOut, "QUINT_OUT" },
+        { Easing::quintInOut, "QUINT_INOUT" },
+        { Easing::quintOutIn, "QUINT_OUTIN" },
+        { Easing::expoIn, "EXPO_IN" },
+        { Easing::expoOut, "EXPO_OUT" },
+        { Easing::expoInOut, "EXPO_INOUT" },
+        { Easing::expoOutIn, "EXPO_OUTIN" },
+        { Easing::circIn, "CIRC_IN" },
+        { Easing::circOut, "CIRC_OUT" },
+        { Easing::circInOut, "CIRC_INOUT" },
+        { Easing::circOutIn, "CIRC_OUTIN" },
+        { Easing::backIn, "BACK_IN" },
+        { Easing::backOut, "BACK_OUT" },
+        { Easing::backInOut, "BACK_INOUT" },
+        { Easing::backOutIn, "BACK_OUTIN" },
+        { Easing::elasticIn, "ELASTIC_IN" },
+        { Easing::elasticOut, "ELASTIC_OUT" },
+        { Easing::elasticInOut, "ELASTIC_INOUT" },
+        { Easing::elasticOutIn, "ELASTIC_OUTIN" },
+        { Easing::bounceIn, "BOUNCE_IN" },
+        { Easing::bounceOut, "BOUNCE_OUT" },
+        { Easing::bounceInOut, "BOUNCE_INOUT" },
+        { Easing::bounceOutIn, "BOUNCE_OUTIN" },
+        { Easing::smoothStep, "SMOOTHSTEP" }
+    };
+
+    auto it = easingFunctionNames.find(easingFunction);
+
+    if (it != easingFunctionNames.end())
+        return it->second;
+
+    return "UNKNOWN";
 }

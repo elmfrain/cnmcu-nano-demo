@@ -3,6 +3,7 @@
 #include <VisualizerScene.hpp>
 #include <MeshObject.hpp>
 #include <cstring>
+#include <animation/Track.hpp>
 
 using namespace em;
 
@@ -47,9 +48,68 @@ static const char* luaGetError(const char* details)
 // Tests
 //----------------------------------------------
 
+class DummyIndexable : public LuaIndexable<DummyIndexable>
+{
+public:
+    int m_value;
+
+    DummyIndexable() : m_value(0) {}
+    
+    int lua_this(lua_State* L)
+    {
+        if(hasLuaInstance(L))
+            return 1;
+        lua_newtable(L);
+        lua_pushlightuserdata(L, this);
+        lua_setfield(L, -2, "ptr");
+        luaL_newmetatable(L, "DummyIndexable");
+        lua_setmetatable(L, -2);
+        luaRegisterInstance(L);
+        return 1;
+    }
+    static int lua_getValue(lua_State* L)
+    {
+        DummyIndexable* dummyIndexable = nullptr;
+        luaPushValueFromKey("ptr", 1);
+        luaGetPointer(dummyIndexable, DummyIndexable, -1);
+        lua_pushinteger(L, dummyIndexable->m_value);
+        return 1;
+    }
+    static int lua_setValue(lua_State* L)
+    {
+        DummyIndexable* dummyIndexable = nullptr;
+        luaPushValueFromKey("ptr", 1);
+        luaGetPointer(dummyIndexable, DummyIndexable, -1);
+        dummyIndexable->m_value = lua_tointeger(L, 2);
+        return 0;
+    }
+    static int lua_openDummyIndexableLib(lua_State* L)
+    {
+        luaL_Reg dummyIndexableMethods[] =
+        {
+            { "getValue", lua_getValue },
+            { "setValue", lua_setValue },
+            { NULL, NULL }
+        };
+        luaL_newmetatable(L, "DummyIndexable");
+        luaL_setfuncs(L, dummyIndexableMethods, 0);
+        lua_pushvalue(L, -1);
+        lua_setfield(L, -2, "__index");
+        lua_setglobal(L, "DummyIndexable");
+        LuaIndexable<DummyIndexable>::luaRegisterType(L);
+        return 1;
+    }
+};
+
+template<>
+const char* LuaIndexable<DummyIndexable>::luaIndexTableName()
+{
+    return "__DummyIndexableInstances";
+}
+
 TEST(LuaScripting, LuaInclude)
 {
-    lua_State* L = luaL_newstate();
+    static lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
     //--------------------------------------------------------------------------------
@@ -160,6 +220,46 @@ TEST(LuaScripting, LuaInclude)
     lua_getglobal(L, "t");
     getValue(L, value);
     ASSERT_EQ(value, 11) << "luaPushValueFromKey() failed";
+
+    //--------------------------------------------------------------------------------
+    // Test LuaIndexable
+    //--------------------------------------------------------------------------------
+
+    DummyIndexable::lua_openDummyIndexableLib(L);
+
+    lua_getglobal(L, "__DummyIndexableInstances");
+    ASSERT_FALSE(lua_isnil(L, -1)) << "LuaIndexable::indexTable failed";
+    lua_pop(L, 1);
+
+    {
+    DummyIndexable dummyIndexable;
+
+    dummyIndexable.lua_this(L);
+    lua_setglobal(L, "dummyIndexable");
+    dummyIndexable.lua_this(L);
+    lua_setglobal(L, "dummyIndexable2");
+
+    lua_getglobal(L, "__DummyIndexableInstances");
+    lua_pushinteger(L, 0);
+    lua_gettable(L, -2);
+    ASSERT_FALSE(lua_isnil(L, -1)) << "LuaIndexable::indexTable failed";
+    lua_pop(L, 2);
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(dummyIndexable).__name == 'DummyIndexable')"), 0) << luaGetError("DummyIndexable metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "dummyIndexable == dummyIndexable2"), 0) << luaGetError("DummyIndexable::operator==() failed");
+
+    ASSERT_EQ(luaRun(L, "dummyIndexable:setValue(10)"), 0) << luaGetError("DummyIndexable::setValue() failed");
+    ASSERT_EQ(dummyIndexable.m_value, 10) << "DummyIndexable::setValue() failed";
+
+    ASSERT_EQ(luaAssert(L, "dummyIndexable:getValue() == 10"), 0) << luaGetError("DummyIndexable::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "dummyIndexable2:getValue() == 10"), 0) << luaGetError("DummyIndexable::getValue() failed");
+    }
+
+    lua_getglobal(L, "__DummyIndexableInstances");
+    lua_pushinteger(L, 0);
+    lua_gettable(L, -2);
+    ASSERT_TRUE(lua_isnil(L, -1)) << "LuaIndexable::hasLuaInstance() failed";
 
     lua_close(L);
 }
@@ -280,6 +380,80 @@ TEST(LuaScripting, Smoother)
     ASSERT_EQ(luaRun(L, "s:setValueAndGrab(80.0)"), 0) << luaGetError("Smoother::setValueAndGrab() failed");
     ASSERT_EQ(s.getValue(), 80.0f) << "Smoother::setValueAndGrab() failed";
     ASSERT_EQ(s.getTarget(), 80.0f) << "Smoother::setValueAndGrab() failed";
+
+    }
+
+    lua_close(L);
+}
+
+TEST(LuaScripting, Keyframe)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    Keyframe::lua_openKeyframeLib(L);
+
+    { // Runtime scope
+
+    Keyframe k;
+    k.time = 10.0f;
+    k.value = 20.0f;
+    k.easing = Easing::quadIn;
+
+    k.lua_this(L);
+    lua_setglobal(L, "k");
+    k.lua_this(L);
+    lua_setglobal(L, "k2");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(k).__name == 'Keyframe')"), 0) << luaGetError("Keyframe metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "k == k2"), 0) << luaGetError("Keyframe::operator==() failed");
+
+    ASSERT_EQ(luaAssert(L, "k:getTime() == 10.0"), 0) << luaGetError("Keyframe::getTime() failed");
+    ASSERT_EQ(luaAssert(L, "k:getValue() == 20.0"), 0) << luaGetError("Keyframe::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "k:getEasing() == \"QUAD_IN\""), 0) << luaGetError("Keyframe::getEasing() failed");
+
+    ASSERT_EQ(luaRun(L, "k:setTime(30.0)"), 0) << luaGetError("Keyframe::setTime() failed");
+    ASSERT_EQ(k.time, 30.0f) << "Keyframe::setTime() failed";
+
+    ASSERT_EQ(luaRun(L, "k:setValue(40.0)"), 0) << luaGetError("Keyframe::setValue() failed");
+    ASSERT_EQ(k.value, 40.0f) << "Keyframe::setValue() failed";
+
+    ASSERT_EQ(luaRun(L, "k:setEasing(\"QUAD_OUT\")"), 0) << luaGetError("Keyframe::setEasing() failed");
+    ASSERT_EQ(k.easing, Easing::quadOut) << "Keyframe::setEasing() failed";
+
+    }
+
+    lua_close(L);
+}
+
+TEST(LuaScripting, Track)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    Track::lua_openTrackLib(L);
+
+    { // Runtime scope
+
+    Track t("test", 10.0f, 20.0f, Easing::quadInOut);
+
+    t.lua_this(L);
+    lua_setglobal(L, "t");
+    t.lua_this(L);
+    lua_setglobal(L, "t2");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(t).__name == 'Track')"), 0) << luaGetError("Track metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "t == t2"), 0) << luaGetError("Track::operator==() failed");
+
+    ASSERT_EQ(luaAssert(L, "t:getName() == \"test\""), 0) << luaGetError("Track::getName() failed");
+    ASSERT_EQ(luaAssert(L, "t:getKeyframesCount() == 2"), 0) << luaGetError("Track::getKeyframesCount() failed");
+
+    ASSERT_EQ(luaAssert(L, "t:getValue(0.0) == 10.0"), 0) << luaGetError("Track::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "t:getValue(0.5) == 15.0"), 0) << luaGetError("Track::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "t:getValue(1.0) == 20.0"), 0) << luaGetError("Track::getValue() failed");
+
+    ASSERT_EQ(luaRun(L, "t:addKeyframe(0.5, 15.0, \"QUAD_IN\")"), 0) << luaGetError("Track::addKeyframe() failed");
+    ASSERT_EQ(t.getKeyframesCount(), 3) << "Track::addKeyframe() failed";
 
     }
 

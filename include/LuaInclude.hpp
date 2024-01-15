@@ -181,3 +181,70 @@ int luaGetSharedPtr(lua_State* L, std::shared_ptr<T>& ptr, const char* typeName,
 
     return 0;
 }
+
+template<typename T>
+class LuaIndexable
+{
+private:
+    int m_Id;
+    lua_State* L = nullptr;
+
+    static const char* luaIndexTableName(); // defined in LuaIndexable.cpp
+public:
+    LuaIndexable() 
+    {
+        static int nextId = 0;
+        m_Id = nextId++;
+    }
+
+    ~LuaIndexable()
+    {
+        if(!L) return;
+
+        lua_getglobal(L, luaIndexTableName());
+        lua_pushinteger(L, m_Id);
+        lua_pushnil(L);
+        lua_settable(L, -3);
+        lua_pop(L, 1);
+    }
+
+    static void luaRegisterType(lua_State* L)
+    {
+        lua_getglobal(L, luaIndexTableName());
+        if(!lua_isnil(L, -1))
+        {
+            lua_pop(L, 1);
+            return;
+        }
+        lua_pop(L, 1);
+
+        lua_newtable(L);
+        lua_setglobal(L, luaIndexTableName());
+    }
+
+    int hasLuaInstance(lua_State* L)
+    {
+        lua_getglobal(L, luaIndexTableName());
+        lua_pushinteger(L, m_Id);
+        lua_gettable(L, -2);
+        bool hasInstance = !lua_isnil(L, -1);
+
+        if(hasInstance) lua_remove(L, -2);
+        else lua_pop(L, 2);
+
+        this->L = L;
+
+        return hasInstance;
+    }
+
+    void luaRegisterInstance(lua_State* L)
+    {
+        lua_getglobal(L, luaIndexTableName());
+        lua_pushinteger(L, m_Id);
+        lua_pushvalue(L, -3);
+        lua_settable(L, -3);
+        lua_pop(L, 1);
+
+        this->L = L;
+    }
+};

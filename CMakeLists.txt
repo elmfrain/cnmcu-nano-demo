@@ -31,6 +31,7 @@ set(PROJECT_SOURCES
   src/stb_image.cpp
   src/LightObject.cpp
   src/Framebuffer.cpp
+  src/LuaIndexable.cpp
 
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp

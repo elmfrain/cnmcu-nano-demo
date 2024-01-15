@@ -22,6 +22,8 @@ Smoother::Smoother()
 
 Smoother::~Smoother()
 {
+    if(!L) return;
+
     lua_getglobal(L, "__SmootherInstances");
     lua_pushinteger(L, m_Id);
     lua_pushnil(L);

@@ -1,6 +1,7 @@
 #include "LuaInclude.hpp"
 #include "animation/Track.hpp"
 #include "animation/Timeline.hpp"
+#include "animation/Smoother.hpp"
 
 template<>
 const char* LuaIndexable<em::Keyframe>::luaIndexTableName()
@@ -18,4 +19,10 @@ template<>
 const char* LuaIndexable<em::Timeline>::luaIndexTableName()
 {
     return "__TimelineInstances";
+}
+
+template<>
+const char* LuaIndexable<em::Smoother>::luaIndexTableName()
+{
+    return "__SmootherInstances";
 }

@@ -39,7 +39,7 @@ namespace em
         const glm::mat4 getViewMatrix() const;
         const glm::mat4 getViewProjectionMatrix() const;
 
-        int lua_this(lua_State* L);
+        int lua_this(lua_State* L) override;
         static int lua_openCameraLib(lua_State* L);
     private:
         static int lua_getProjectionMode(lua_State* L);

@@ -18,7 +18,7 @@ namespace em
         void setIntensity(float intensity);
         float getIntensity() const;
 
-        int lua_this(lua_State* L);
+        int lua_this(lua_State* L) override;
         static int lua_openLightObjectLib(lua_State* L);
     private:
         glm::vec3 color;

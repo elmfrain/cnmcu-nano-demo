@@ -3,7 +3,7 @@
 #include <VisualizerScene.hpp>
 #include <MeshObject.hpp>
 #include <cstring>
-#include <animation/Track.hpp>
+#include <animation/Timeline.hpp>
 
 using namespace em;
 
@@ -454,6 +454,89 @@ TEST(LuaScripting, Track)
 
     ASSERT_EQ(luaRun(L, "t:addKeyframe(0.5, 15.0, \"QUAD_IN\")"), 0) << luaGetError("Track::addKeyframe() failed");
     ASSERT_EQ(t.getKeyframesCount(), 3) << "Track::addKeyframe() failed";
+
+    }
+
+    lua_close(L);
+}
+
+TEST(LuaScripting, Timeline)
+{
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+    Timeline::lua_openTimelineLib(L);
+
+    { // Runtime scope
+
+    Timeline t;
+    t.addTrack("test", 10.0f, 20.0f);
+    t.setDuration(30.0f);
+    t.setCurrentTime(15.0f);
+    t.setSpeed(40.0f);
+    t.setLooping(true);
+
+    t.lua_this(L);
+    lua_setglobal(L, "t");
+    t.lua_this(L);
+    lua_setglobal(L, "t2");
+
+    ASSERT_EQ(luaRun(L, "assert(getmetatable(t).__name == 'Timeline')"), 0) << luaGetError("Timeline metatable name assertion failed");
+
+    ASSERT_EQ(luaAssert(L, "t == t2"), 0) << luaGetError("Timeline::operator==() failed");
+
+    ASSERT_EQ(luaAssert(L, "t:getValue(\"test\") == 15.0"), 0) << luaGetError("Timeline::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "t:getValue(0) == 15.0"), 0) << luaGetError("Timeline::getValue() failed");
+    ASSERT_EQ(luaAssert(L, "t:getName(0) == \"test\""), 0) << luaGetError("Timeline::getName() failed");
+    ASSERT_EQ(luaAssert(L, "t:getTracksCount() == 1"), 0) << luaGetError("Timeline::getTracksCount() failed");
+    ASSERT_EQ(luaAssert(L, "t:getTrack(0):getName() == \"test\""), 0) << luaGetError("Timeline::getTrack() failed");
+    ASSERT_EQ(luaAssert(L, "t:getTrack(\"test\"):getName() == \"test\""), 0) << luaGetError("Timeline::getTrack() failed");
+    ASSERT_EQ(luaAssert(L, "t:getDuration() == 30.0"), 0) << luaGetError("Timeline::getDuration() failed");
+    ASSERT_EQ(luaAssert(L, "t:getCurrentTime() == 15.0"), 0) << luaGetError("Timeline::getCurrentTime() failed");
+    ASSERT_EQ(luaAssert(L, "t:getSpeed() == 40.0"), 0) << luaGetError("Timeline::getSpeed() failed");
+    ASSERT_EQ(luaAssert(L, "t:isPaused() == false"), 0) << luaGetError("Timeline::isPaused() failed");
+    ASSERT_EQ(luaAssert(L, "t:isStopped() == true"), 0) << luaGetError("Timeline::isStopped() failed");
+    ASSERT_EQ(luaAssert(L, "t:isRewinding() == false"), 0) << luaGetError("Timeline::isRewinding() failed");
+    ASSERT_EQ(luaAssert(L, "t:isLooping() == true"), 0) << luaGetError("Timeline::isLooping() failed");
+
+    ASSERT_EQ(luaRun(L, "t:setDuration(50.0)"), 0) << luaGetError("Timeline::setDuration() failed");
+    ASSERT_EQ(t.getDuration(), 50.0f) << "Timeline::setDuration() failed";
+
+    ASSERT_EQ(luaRun(L, "t:setCurrentTime(25.0)"), 0) << luaGetError("Timeline::setCurrentTime() failed");
+    ASSERT_EQ(t.getCurrentTime(), 25.0f) << "Timeline::setCurrentTime() failed";
+
+    ASSERT_EQ(luaRun(L, "t:setSpeed(60.0)"), 0) << luaGetError("Timeline::setSpeed() failed");
+    ASSERT_EQ(t.getSpeed(), 60.0f) << "Timeline::setSpeed() failed";
+
+    ASSERT_EQ(luaRun(L, "t:setLooping(false)"), 0) << luaGetError("Timeline::setLooping() failed");
+    ASSERT_FALSE(t.isLooping()) << "Timeline::setLooping() failed";
+
+    ASSERT_EQ(luaRun(L, "t:play()"), 0) << luaGetError("Timeline::play() failed");
+    ASSERT_FALSE(t.isPaused()) << "Timeline::play() failed";
+
+    ASSERT_EQ(luaRun(L, "t:pause()"), 0) << luaGetError("Timeline::pause() failed");
+    ASSERT_TRUE(t.isPaused()) << "Timeline::pause() failed";
+
+    ASSERT_EQ(luaRun(L, "t:stop()"), 0) << luaGetError("Timeline::stop() failed");
+    ASSERT_TRUE(t.isStopped() && !t.isPaused()) << "Timeline::stop() failed";
+
+    ASSERT_EQ(luaRun(L, "t:rewind()"), 0) << luaGetError("Timeline::rewind() failed");
+    ASSERT_TRUE(t.isRewinding() && !t.isPaused()) << "Timeline::rewind() failed";
+
+    t.play(); t.pause();
+
+    ASSERT_EQ(luaRun(L, "t:resume()"), 0) << luaGetError("Timeline::resume() failed");
+    ASSERT_FALSE(t.isPaused()) << "Timeline::resume() failed";
+
+    ASSERT_EQ(luaRun(L, "t:seek(0.25, true, true)"), 0) << luaGetError("Timeline::seek() failed");
+    ASSERT_EQ(t.getCurrentTime(), 0.25f) << "Timeline::seek() failed";
+    ASSERT_TRUE(t.isPaused() && t.isRewinding()) << "Timeline::seek() failed";
+
+    t.seek(0.0f, false, false); t.stop();
+
+    ASSERT_EQ(luaRun(L, "t:addTrack(\"test2\", 70.0, 80.0, \"QUAD_IN\")"), 0) << luaGetError("Timeline::addTrack() failed");
+    ASSERT_EQ(t.getTracksCount(), 2) << "Timeline::addTrack() failed";
+    ASSERT_STREQ(t.getTracki(1)->getName(), "test2") << "Timeline::addTrack() failed";
+    ASSERT_EQ(t.getTrack("test2")->getValue(0.0f), 70.0f) << "Timeline::addTrack() failed";
 
     }
 

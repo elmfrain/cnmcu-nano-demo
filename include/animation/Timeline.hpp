@@ -4,21 +4,29 @@
 
 #include <unordered_map>
 #include <vector>
+#include <string>
+#include <LuaInclude.hpp>
 
 namespace em
 {
-    class Timeline
+    class Timeline : private LuaIndexable<Timeline>
     {
     public:
         Timeline();
-        Timeline(const std::vector<Track>& tracks);
+        Timeline(std::vector<Track>&& tracks);
 
-        void addTrack(const Track& track);
+        Timeline(const Timeline& other) = delete;
+        Timeline operator=(const Timeline& other) = delete;
+
+        Timeline(Timeline&& other);
+        Timeline& operator=(Timeline&& other);
+
+        void addTrack(Track&& track);
         void addTrack(const char* name, float value);
-        void addTrack(const char* name, const std::vector<Keyframe>& keyframes);
+        void addTrack(const char* name, std::vector<Keyframe>&& keyframes);
         void addTrack(const char* name, float startValue, float endValue, Easing::Function easing = Easing::linear);
 
-        void addTracks(const std::vector<Track>& tracks);
+        void addTracks(std::vector<Track>&& tracks);
 
         void update(float deltaTime);
 
@@ -31,7 +39,7 @@ namespace em
         void resume();
 
         float getValue(const char* name) const;
-        float getValue(size_t index) const;
+        float getValuei(size_t index) const;
         const char* getName(size_t index) const;
         size_t getTracksCount() const;
         Track* getTracki(size_t index);
@@ -52,12 +60,14 @@ namespace em
         void setDuration(float duration);
         void setCurrentTime(float currentTime);
 
+        int lua_this(lua_State* L);
+        static int lua_openTimelineLib(lua_State* L);
     private:
         std::array<Track, 8> tracksSmallList;
         std::vector<Track> tracksLargeList;
-        mutable std::unordered_map<const char*, size_t> tracksMap;
         Track* tracks = tracksSmallList.data();
         size_t tracksCount = 0;
+        mutable std::unordered_map<std::string, size_t> tracksMap;
 
         float duration = 1.0f;
         float currentTime = 0.0f;
@@ -66,5 +76,31 @@ namespace em
         bool stopped = true;
         bool rewinding = false;
         bool looping = false;
+
+        static int lua_getValue(lua_State* L);
+        static int lua_getName(lua_State* L);
+        static int lua_getTracksCount(lua_State* L);
+        static int lua_getTrack(lua_State* L);
+        static int lua_getDuration(lua_State* L);
+        static int lua_getCurrentTime(lua_State* L);
+        static int lua_getSpeed(lua_State* L);
+        static int lua_isPaused(lua_State* L);
+        static int lua_isStopped(lua_State* L);
+        static int lua_isRewinding(lua_State* L);
+        static int lua_isLooping(lua_State* L);
+
+        static int lua_setLooping(lua_State* L);
+        static int lua_setSpeed(lua_State* L);
+        static int lua_setDuration(lua_State* L);
+        static int lua_setCurrentTime(lua_State* L);
+
+        static int lua_play(lua_State* L);
+        static int lua_pause(lua_State* L);
+        static int lua_stop(lua_State* L);
+        static int lua_rewind(lua_State* L);
+        static int lua_resume(lua_State* L);
+
+        static int lua_addTrack(lua_State* L);
+        static int lua_seek(lua_State* L);
     };
 }

@@ -9,6 +9,7 @@
 #include <LuaInclude.hpp>
 
 #include "animation/Smoother.hpp"
+#include "animation/Timeline.hpp"
 
 #include "Logger.hpp"
 
@@ -69,6 +70,7 @@ namespace em
         ~Dynamics();
 
         std::unordered_map<std::string, Smoother> smoothers;
+        std::unordered_map<std::string, Timeline> timelines;
         bool enabled;
 
         void update(float dt, SceneObject* parent = nullptr);
@@ -80,7 +82,11 @@ namespace em
         static int m_nextId;
 
         static int lua_getSmoother(lua_State* L);
+        static int lua_getTimeline(lua_State* L);
+
         static int lua_deleteSmoother(lua_State* L);
+        static int lua_deleteTimeline(lua_State* L);
+
         static int lua_isEnabled(lua_State* L);
 
         int m_Id;

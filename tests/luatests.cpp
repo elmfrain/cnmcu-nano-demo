@@ -555,6 +555,8 @@ TEST(LuaScripting, Dynamics)
     d.enabled = true;
     d.smoothers["test"] = Smoother();
     d.smoothers["test"].setValue(10.0f);
+    d.timelines["timelineTest"] = Timeline();
+    d.timelines["timelineTest"].addTrack("test", 10.0f, 20.0f);
 
     d.lua_this(L);
     lua_setglobal(L, "d");
@@ -564,12 +566,19 @@ TEST(LuaScripting, Dynamics)
     ASSERT_EQ(luaAssert(L, "d:isEnabled() == true"), 0) << luaGetError("Dynamics::isEnabled() failed");
 
     ASSERT_EQ(luaAssert(L, "d:getSmoother('test'):getValue() == 10.0"), 0) << luaGetError("Dynamics::getSmoother() failed");
+    ASSERT_EQ(luaAssert(L, "d:getTimeline('timelineTest'):getValue('test') == 10.0"), 0) << luaGetError("Dynamics::getTimeline() failed");
 
     ASSERT_EQ(luaRun(L, "d:getSmoother('test2')"), 0) << luaGetError("Dynamics::getSmoother() failed");
     ASSERT_EQ(d.smoothers.count("test2"), 1) << "Dynamics::getSmoother() failed";
 
     ASSERT_EQ(luaRun(L, "d:deleteSmoother('test')"), 0) << luaGetError("Dynamics::deleteSmoother() failed");
     ASSERT_EQ(d.smoothers.count("test"), 0) << "Dynamics::deleteSmoother() failed";
+
+    ASSERT_EQ(luaRun(L, "d:getTimeline('timelineTest2')"), 0) << luaGetError("Dynamics::getTimeline() failed");
+    ASSERT_EQ(d.timelines.count("timelineTest2"), 1) << "Dynamics::getTimeline() failed";
+
+    ASSERT_EQ(luaRun(L, "d:deleteTimeline('timelineTest')"), 0) << luaGetError("Dynamics::deleteTimeline() failed");
+    ASSERT_EQ(d.timelines.count("timelineTest"), 0) << "Dynamics::deleteTimeline() failed";
 
     ASSERT_EQ(luaRun(L, "UpdateValue = 20.0"), 0) << luaGetError("Dynamics::update() failed");
     ASSERT_EQ(luaRun(L, "d.onUpdate = function(dt) UpdateValue = 30.0 end"), 0) << luaGetError("Dynamics::update() failed");

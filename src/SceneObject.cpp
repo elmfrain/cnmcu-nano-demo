@@ -309,6 +309,8 @@ int Dynamics::lua_openDynamicsLib(lua_State* L)
     static const luaL_Reg luaDynamicsMethods[] =
     {
         {"getSmoother", lua_getSmoother},
+        {"getTimeline", lua_getTimeline},
+        {"deleteTimeline", lua_deleteTimeline},
         {"deleteSmoother", lua_deleteSmoother},
         {"isEnabled", lua_isEnabled},
         {nullptr, nullptr}
@@ -316,6 +318,7 @@ int Dynamics::lua_openDynamicsLib(lua_State* L)
 
     Dynamics::L = L;
     Smoother::lua_openSmootherLib(L);
+    Timeline::lua_openTimelineLib(L);
 
     luaL_newmetatable(L, "Dynamics");
     luaL_setfuncs(L, luaDynamicsMethods, 0);
@@ -342,12 +345,32 @@ int Dynamics::lua_getSmoother(lua_State* L)
     return 1;
 }
 
+int Dynamics::lua_getTimeline(lua_State* L)
+{
+    luaGetDynamics();
+
+    const char* timelineName = luaL_checkstring(L, 2);
+    dynamics->timelines[timelineName].lua_this(L);
+
+    return 1;
+}
+
 int Dynamics::lua_deleteSmoother(lua_State* L)
 {
     luaGetDynamics();
 
     const char* smootherName = luaL_checkstring(L, 2);
     dynamics->smoothers.erase(smootherName);
+
+    return 0;
+}
+
+int Dynamics::lua_deleteTimeline(lua_State* L)
+{
+    luaGetDynamics();
+
+    const char* timelineName = luaL_checkstring(L, 2);
+    dynamics->timelines.erase(timelineName);
 
     return 0;
 }

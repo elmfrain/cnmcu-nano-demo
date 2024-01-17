@@ -280,4 +280,13 @@ TEST(Animation, Timeline)
         if(!paused) x += 0.125f;
         timeline.update(0.125f);
     }
+
+    timeline.addTrack("test2", 70.0f, 80.0f, Easing::quadInOut);
+    timeline.addTrack("test3", 0.0f, 1.0f, Easing::quadInOut);
+
+    ASSERT_EQ(timeline.getTracksCount(), 3);
+    ASSERT_EQ(timeline.getTracki(1)->getValue(1.0f), 80.0f);
+    ASSERT_EQ(timeline.getTrack("test2")->getValue(0.0f), 70.0f);
+    ASSERT_EQ(timeline.getTracki(2)->getValue(1.0f), 1.0f);
+    ASSERT_EQ(timeline.getTrack("test3")->getValue(0.0f), 0.0f);
 }

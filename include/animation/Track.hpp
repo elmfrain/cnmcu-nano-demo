@@ -35,12 +35,17 @@ namespace em
         Track();
         Track(const char* name);
         Track(const char* name, float value);
-        Track(const char* name, const std::vector<Keyframe>& keyframes);
+        Track(const char* name, std::vector<Keyframe>&& keyframes);
         Track(const char* name, float startValue, float endValue, Easing::Function easing = Easing::linear);
+        Track(const Track& other) = delete;
+        Track operator=(const Track& other) = delete;
 
-        void addKeyframe(const Keyframe& keyframe);
+        Track(Track&& other);
+        Track& operator=(Track&& other);
+
+        void addKeyframe(Keyframe&& keyframe);
         void addKeyframe(float time, float value, Easing::Function easing = Easing::linear);
-        void addKeyframes(const std::vector<Keyframe>& keyframes);
+        void addKeyframes(std::vector<Keyframe>&& keyframes);
 
         float getValue(float time) const;
         const char* getName() const;
@@ -52,14 +57,13 @@ namespace em
 
         char name[32];
 
-        std::array<Keyframe, 8> keyframesSmallList;
+        std::array<Keyframe, 16> keyframesSmallList;
         std::vector<Keyframe> keyframesLargeList;
-
         Keyframe* keyframes = keyframesSmallList.data();
         size_t keyframesCount = 0;
 
-        mutable Keyframe* currentKeyframe = nullptr;
-        mutable Keyframe* nextKeyframe = nullptr;
+        mutable const Keyframe* currentKeyframe = nullptr;
+        mutable const Keyframe* nextKeyframe = nullptr;
 
         void sortKeyframes();
         void findKeyframes(float time) const;

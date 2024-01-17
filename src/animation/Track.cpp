@@ -127,12 +127,12 @@ Track::Track(const char* name, float value)
     addKeyframe(1.0f, value);
 }
 
-Track::Track(const char* name, const std::vector<Keyframe>& keyframes)
+Track::Track(const char* name, std::vector<Keyframe>&& keyframes)
 {
     memset(this->name, 0, 32);
     strncpy(this->name, name, 31);
 
-    addKeyframes(keyframes);
+    addKeyframes(std::move(keyframes));
 
     if (keyframesCount == 0)
     {
@@ -152,40 +152,75 @@ Track::Track(const char* name, float startValue, float endValue, Easing::Functio
     addKeyframe(1.0f, endValue);
 }
 
-void Track::addKeyframe(const Keyframe& keyframe)
+Track::Track(Track&& other)
 {
-    if (keyframesCount == 8)
-    {
-        keyframesLargeList = std::vector<Keyframe>(keyframesSmallList.begin(), keyframesSmallList.end());
-        keyframes = keyframesLargeList.data();
-    }
+    *this = std::move(other);
+}
 
+Track& Track::operator=(Track&& other)
+{
+    if(this == &other)
+        return *this;
+
+    memcpy(name, other.name, 32);
+    keyframesCount = other.keyframesCount;
+    keyframesSmallList = std::move(other.keyframesSmallList);
+    keyframesLargeList = std::move(other.keyframesLargeList);
+
+    if(keyframesCount < 16)
+        keyframes = keyframesSmallList.data();
+    else
+        keyframes = keyframesLargeList.data();
+
+    other.keyframes = other.keyframesSmallList.data();
+    other.keyframesCount = 0;
+    other.currentKeyframe = nullptr;
+    other.nextKeyframe = nullptr;
+
+    return *this;
+}
+
+void Track::addKeyframe(Keyframe&& keyframe)
+{
     for(size_t i = 0; i < keyframesCount; i++)
         if (keyframes[i].time == keyframe.time)
         {
-            keyframes[i] = keyframe;
+            keyframes[i] = std::move(keyframe);
             return;
         }
 
-    keyframes[keyframesCount++] = keyframe;
+    if (keyframesCount == 16)
+    {
+        keyframesLargeList.reserve(16);
+        for (size_t i = 0; i < 16; i++)
+            keyframesLargeList.push_back(std::move(keyframesSmallList[i]));
+    }
+
+    if(keyframesCount < 16)
+    {
+        keyframes = keyframesSmallList.data();
+        keyframes[keyframesCount] = std::move(keyframe);
+    }
+    else
+    {
+        keyframesLargeList.push_back(std::move(keyframe));
+        keyframes = keyframesLargeList.data();
+    }
+
+    keyframesCount++;
 
     sortKeyframes();
 }
 
 void Track::addKeyframe(float time, float value, Easing::Function easing)
 {
-    Keyframe keyframe;
-    keyframe.time = time;
-    keyframe.value = value;
-    keyframe.easing = easing;
-
-    addKeyframe(keyframe);
+    addKeyframe({ time, value, easing });
 }
 
-void Track::addKeyframes(const std::vector<Keyframe>& keyframes)
+void Track::addKeyframes(std::vector<Keyframe>&& keyframes)
 {
-    for (const auto& keyframe : keyframes)
-        addKeyframe(keyframe);
+    for (auto& keyframe : keyframes)
+        addKeyframe(std::move(keyframe));
 }
 
 float Track::getValue(float time) const
@@ -197,6 +232,9 @@ float Track::getValue(float time) const
         return keyframes[0].value;
 
     findKeyframes(time);
+
+    if (currentKeyframe == nextKeyframe)
+        return currentKeyframe->value;
 
     float t = (time - currentKeyframe->time) / (nextKeyframe->time - currentKeyframe->time);
     return currentKeyframe->value + (nextKeyframe->value - currentKeyframe->value) * currentKeyframe->easing(t);
@@ -257,21 +295,22 @@ int Track::lua_openTrackLib(lua_State* L)
 
 void Track::sortKeyframes()
 {
+    // std::sort(keyframes.begin(), keyframes.end(), [](const Keyframe& a, const Keyframe& b) { return a.time < b.time; });
     std::sort(keyframes, keyframes + keyframesCount, [](const Keyframe& a, const Keyframe& b) { return a.time < b.time; });
 }
 
 void Track::findKeyframes(float time) const
 {
-    if (time < keyframes[0].time)
+    if (time <= keyframes[0].time)
     {
         currentKeyframe = &keyframes[0];
-        nextKeyframe = &keyframes[1];
+        nextKeyframe = &keyframes[0];
         return;
     }
 
-    if (time > keyframes[keyframesCount - 1].time)
+    if (time >= keyframes[keyframesCount - 1].time)
     {
-        currentKeyframe = &keyframes[keyframesCount - 2];
+        currentKeyframe = &keyframes[keyframesCount - 1];
         nextKeyframe = &keyframes[keyframesCount - 1];
         return;
     }

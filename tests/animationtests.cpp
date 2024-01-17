@@ -152,7 +152,7 @@ TEST(Animation, Timeline)
         { 1.0f, 1.0f }
     });
 
-    timeline.addTrack(track);
+    timeline.addTrack(std::move(track));
 
     timeline.play();
 

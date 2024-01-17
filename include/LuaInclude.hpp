@@ -191,10 +191,9 @@ private:
 
     static const char* luaIndexTableName(); // defined in LuaIndexable.cpp
 public:
-    LuaIndexable() 
+    LuaIndexable()
     {
-        static int nextId = 0;
-        m_Id = nextId++;
+        
     }
 
     ~LuaIndexable()
@@ -206,6 +205,33 @@ public:
         lua_pushnil(L);
         lua_settable(L, -3);
         lua_pop(L, 1);
+    }
+
+    LuaIndexable(const LuaIndexable& other)
+    {
+        *this = other;
+    }
+
+    LuaIndexable& operator=(const LuaIndexable& other)
+    {
+        m_Id = other.m_Id;
+        L = other.L;
+
+        return *this;
+    }
+
+    LuaIndexable(LuaIndexable&& other)
+    {
+        *this = std::move(other);
+    }
+
+    LuaIndexable& operator=(LuaIndexable&& other)
+    {
+        m_Id = other.m_Id;
+        L = other.L;
+        other.L = nullptr;
+
+        return *this;
     }
 
     static void luaRegisterType(lua_State* L)
@@ -239,6 +265,9 @@ public:
 
     void luaRegisterInstance(lua_State* L)
     {
+        static int nextId = 0;
+        m_Id = nextId++;
+
         lua_getglobal(L, luaIndexTableName());
         lua_pushinteger(L, m_Id);
         lua_pushvalue(L, -3);

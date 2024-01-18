@@ -57,7 +57,7 @@ local lights = {
 local function initCompositorAndCamera()
   scene.compositor:setGamma(1.6)
   scene.compositor:setExposure(1.5)
-  -- scene.camera.transform:setPosition({0.0, 1.0, 0.0})
+  scene.camera.transform:setPosition({0.0, 1.0, 0.0})
   scene.camera.transform:setRotationEuler({-1.57, 0.0, 0.0})
 end
 
@@ -97,9 +97,19 @@ function Start()
 
   SareObject:setDynamic(true)
   SareObject.dynamics.time = 0.0
+  SareObject.dynamics:getTimeline("tml"):addTrack("xpos", -2.0, 1.0)
+  SareObject.dynamics:getTimeline("tml"):setLooping(true)
+  SareObject.dynamics:getTimeline("tml"):setDuration(2.0)
+  SareObject.dynamics:getTimeline("tml"):play()
   SareObject.dynamics.onUpdate = function (dt, obj)
     obj.dynamics.time = obj.dynamics.time + dt
     local smoother = obj.dynamics:getSmoother("smt")
+
+    local animation = obj.dynamics:getTimeline("tml")
+    local x = animation:getValue("xpos")
+
+    obj.transform:setPosition({x, 0.0, 0.0})
+
     smoother:setSpeed(3.0)
     smoother:setDamping(4.0)
     smoother:setSpringing(true)

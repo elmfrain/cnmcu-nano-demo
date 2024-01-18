@@ -1,6 +1,5 @@
 # Blender 3.6.5
 # www.blender.org
-mtllib planet.mtl
 o planet.001
 v -0.421790 -0.075215 -1.018292
 v -0.319946 -0.075215 -1.054691

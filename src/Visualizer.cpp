@@ -34,6 +34,7 @@ bool VisualizerApp::start(AppParams& options)
     //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     m_window = glfwCreateWindow(options.width, options.height, "Visualizer", nullptr, nullptr);
+    m_windowSize = glm::ivec2(options.width, options.height);
 
     if(!m_window)
     {
@@ -57,6 +58,9 @@ bool VisualizerApp::start(AppParams& options)
 
     // Setup input
     m_input = std::make_unique<Input>(m_window);
+
+    // Setup callbacks
+    glfwSetWindowSizeCallback(m_window, onWindowResize);
 
     // Setup scene
     m_scene.init();
@@ -96,6 +100,9 @@ bool VisualizerApp::runLoop()
 
     if(m_input->isKeyPressed(GLFW_KEY_F11))
         setFullscreen(!m_fullscreen);
+
+    if(m_input->isKeyPressed(GLFW_KEY_F5))
+        m_scene.reload();
 
     return true;
 }
@@ -137,16 +144,7 @@ void VisualizerApp::setFullscreen(bool fullscreen)
 
 glm::ivec2 VisualizerApp::getWindowSize()
 {
-    if(!m_initialized)
-    {
-        m_logger.errorf("Application has not been initialized");
-        return glm::ivec2(0, 0);
-    }
-
-    int width, height;
-    glfwGetWindowSize(m_window, &width, &height);
-
-    return glm::ivec2(width, height);
+    return m_windowSize;
 }
 
 AppParams VisualizerApp::getParams()
@@ -167,4 +165,11 @@ GLFWwindow* VisualizerApp::getWindowHandle()
 VisualizerApp& VisualizerApp::getInstance()
 {
     return *instance;
+}
+
+void VisualizerApp::onWindowResize(GLFWwindow* window, int width, int height)
+{
+    VisualizerApp& app = VisualizerApp::getInstance();
+    app.m_windowSize = glm::ivec2(width, height);
+    app.m_scene.onWindowResize(width, height);
 }

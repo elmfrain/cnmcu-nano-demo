@@ -2,6 +2,157 @@
 
 using namespace em;
 
+#define luaGetPhongMaterial() \
+    PhongMaterial* material; \
+    luaPushValueFromKey("ptr", 1); \
+    luaGetPointer(material, PhongMaterial, -1);
+
+int PhongMaterial::lua_this(lua_State* L)
+{
+    lua_newtable(L);
+    lua_pushlightuserdata(L, this);
+    lua_setfield(L, -2, "ptr");
+
+    luaL_newmetatable(L, "PhongMaterial");
+    lua_setmetatable(L, -2);
+
+    return 1;
+}
+
+int PhongMaterial::lua_openPhongMaterialLib(lua_State* L)
+{
+    static const luaL_Reg luaPhongMaterialMethods[] =
+    {
+        {"getAmbient", lua_getAmbient},
+        {"getDiffuse", lua_getDiffuse},
+        {"getSpecular", lua_getSpecular},
+        {"getShininess", lua_getShininess},
+        {"getRoughness", lua_getRoughness},
+        {"setAmbient", lua_setAmbient},
+        {"setDiffuse", lua_setDiffuse},
+        {"setSpecular", lua_setSpecular},
+        {"setShininess", lua_setShininess},
+        {"setRoughness", lua_setRoughness},
+        {nullptr, nullptr}
+    };
+
+    luaL_newmetatable(L, "PhongMaterial");
+    luaL_setfuncs(L, luaPhongMaterialMethods, 0);
+
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -2);
+    lua_settable(L, -3);
+
+    lua_setglobal(L, "PhongMaterial");
+
+    return 0;
+}
+
+int PhongMaterial::lua_getAmbient(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    luaPushVec3(material->ambient);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getDiffuse(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    luaPushVec3(material->diffuse);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getSpecular(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    luaPushVec3(material->specular);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getShininess(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    lua_pushnumber(L, material->shininess);
+
+    return 1;
+}
+
+int PhongMaterial::lua_getRoughness(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    lua_pushnumber(L, glm::sqrt(1.0f / material->shininess));
+
+    return 1;
+}
+
+int PhongMaterial::lua_setAmbient(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    glm::vec3 ambient;
+    luaGetVec3(ambient, 2);
+
+    material->ambient = ambient;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setDiffuse(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    glm::vec3 diffuse;
+    luaGetVec3(diffuse, 2);
+
+    material->diffuse = diffuse;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setSpecular(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    glm::vec3 specular;
+    luaGetVec3(specular, 2);
+
+    material->specular = specular;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setShininess(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    float shininess;
+    luaGet(shininess, float, number, 2);
+
+    material->shininess = shininess;
+
+    return 0;
+}
+
+int PhongMaterial::lua_setRoughness(lua_State* L)
+{
+    luaGetPhongMaterial();
+
+    float roughness;
+    luaGet(roughness, float, number, 2);
+
+    material->roughnessToShininess(roughness);
+
+    return 0;
+}
+
 const char* PhongShader::m_vertexShaderSource =
     "#version 330 core\n"
     "layout(location = 0) in vec3 inPos;\n"
@@ -66,15 +217,15 @@ const char* PhongShader::m_fragmentShaderSource =
     "}\n"
     "void main()\n"
     "{\n"
+    "    outColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
     "    vec3 viewDir = normalize(u_cameraPos - fragPos);\n"
     "    for(int i = 0; i < u_lightCount; i++)\n"
     "    {\n"
-    "        outColor += vec4(calcLight(u_lights[i], viewDir), 1.0);\n"
+    "        outColor += vec4(calcLight(u_lights[i], viewDir), 0.0);\n"
     "    }\n"
     "    outColor *= u_color;\n"
     "    if(u_vertexColorEnabled) outColor *= color;\n"
     "    if(u_enabledTexture >= 0) outColor *= texture(u_textures[u_enabledTexture], uv);\n"
-    "    outColor = vec4(pow(outColor.rgb, vec3(0.45)), outColor.a);\n" // Apply gamma correction
     "}\n";
 
 PhongShader::PhongShader() : Shader()

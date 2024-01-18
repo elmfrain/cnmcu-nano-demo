@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "Shader.hpp"
+#include <LuaInclude.hpp>
 
 #define MAX_LIGHTS 8
 
@@ -16,6 +17,60 @@ namespace em
         void roughnessToShininess(float roughness)
         {
             shininess = 1.0f / (roughness * roughness);
+        }
+
+        int lua_this(lua_State* L);
+        static int lua_openPhongMaterialLib(lua_State* L);
+
+    private:
+        static int lua_getAmbient(lua_State* L);
+        static int lua_getDiffuse(lua_State* L);
+        static int lua_getSpecular(lua_State* L);
+        static int lua_getShininess(lua_State* L);
+        static int lua_getRoughness(lua_State* L);
+
+        static int lua_setAmbient(lua_State* L);
+        static int lua_setDiffuse(lua_State* L);
+        static int lua_setSpecular(lua_State* L);
+        static int lua_setShininess(lua_State* L);
+        static int lua_setRoughness(lua_State* L);
+    public:
+        static int fromLua(lua_State* L, int index, PhongMaterial& material)
+        {
+            if(luaHasKeyValue(L, "ambient", index))
+            {
+                luaPushValueFromKey("ambient", index);
+                luaGetVec3(material.ambient, -1);
+            }
+
+            if(luaHasKeyValue(L, "diffuse", index))
+            {
+                luaPushValueFromKey("diffuse", index);
+                int type = lua_rawlen(L, -1);
+                luaGetVec3(material.diffuse, -1);
+            }
+
+            if(luaHasKeyValue(L, "specular", index))
+            {
+                luaPushValueFromKey("specular", index);
+                luaGetVec3(material.specular, -1);
+            }
+
+            if(luaHasKeyValue(L, "shininess", index))
+            {
+                luaPushValueFromKey("shininess", index);
+                luaGet(material.shininess, float, number, -1);
+            }
+
+            if(luaHasKeyValue(L, "roughness", index))
+            {
+                luaPushValueFromKey("roughness", index);
+                float roughness;
+                luaGet(roughness, float, number, -1);
+                material.roughnessToShininess(roughness);
+            }
+
+            return 0;
         }
     };
 

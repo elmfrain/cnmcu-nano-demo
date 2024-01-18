@@ -237,21 +237,10 @@ int Transform::lua_setRotationMode(lua_State* L)
 //----------------------------------------------------------------------------------------------
 
 lua_State* Dynamics::L = nullptr;
-int Dynamics::m_nextId = 0;
 
-Dynamics::Dynamics()
-    : m_Id(m_nextId++)
-    , enabled(false)
+Dynamics::Dynamics() :
+    enabled(false)
 {
-}
-
-Dynamics::~Dynamics()
-{
-    lua_getglobal(L, "__DynamicsInstances");
-    lua_pushinteger(L, m_Id);
-    lua_pushnil(L);
-    lua_settable(L, -3);
-    lua_pop(L, 1);
 }
 
 void Dynamics::update(float dt, SceneObject* parent)
@@ -259,12 +248,10 @@ void Dynamics::update(float dt, SceneObject* parent)
     for(auto& smoother : smoothers)
         smoother.second.update(dt);
 
-    lua_getglobal(L, "__DynamicsInstances");
-    lua_pushinteger(L, m_Id);
-    lua_gettable(L, -2);
+    if(!hasLuaInstance(L))
+        return;
 
-    lua_pushstring(L, "onUpdate");
-    lua_gettable(L, -2);
+    lua_getfield(L, -1, "onUpdate");
 
     if(lua_isfunction(L, -1))
     {
@@ -276,9 +263,9 @@ void Dynamics::update(float dt, SceneObject* parent)
             lua_call(L, 2, 0);
         }
         else lua_call(L, 1, 0);
-    }
+    } else lua_pop(L, 1);
 
-    lua_pop(L, 2);
+    lua_pop(L, 1);
 }
 
 #define luaGetDynamics() \
@@ -288,6 +275,9 @@ void Dynamics::update(float dt, SceneObject* parent)
 
 int Dynamics::lua_this(lua_State* L)
 {
+    if(hasLuaInstance(L))
+        return 1;
+
     lua_newtable(L);
     lua_pushlightuserdata(L, this);
     lua_setfield(L, -2, "ptr");
@@ -295,11 +285,7 @@ int Dynamics::lua_this(lua_State* L)
     luaL_newmetatable(L, "Dynamics");
     lua_setmetatable(L, -2);
 
-    lua_getglobal(L, "__DynamicsInstances");
-    lua_pushinteger(L, m_Id);
-    lua_pushvalue(L, -3);
-    lua_settable(L, -3);
-    lua_pop(L, 1);
+    luaRegisterInstance(L);
 
     return 1;
 }
@@ -329,8 +315,7 @@ int Dynamics::lua_openDynamicsLib(lua_State* L)
 
     lua_setglobal(L, "Dynamics");
 
-    lua_newtable(L);
-    lua_setglobal(L, "__DynamicsInstances");
+    LuaIndexable<Dynamics>::luaRegisterType(L);
 
     return 0;
 }

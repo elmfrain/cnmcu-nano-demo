@@ -64,10 +64,9 @@ namespace em
 
     class SceneObject;
 
-    struct Dynamics
+    struct Dynamics : private LuaIndexable<Dynamics>
     {
         Dynamics();
-        ~Dynamics();
 
         std::unordered_map<std::string, Smoother> smoothers;
         std::unordered_map<std::string, Timeline> timelines;
@@ -79,7 +78,6 @@ namespace em
         static int lua_openDynamicsLib(lua_State* L);
     private:
         static lua_State* L;
-        static int m_nextId;
 
         static int lua_getSmoother(lua_State* L);
         static int lua_getTimeline(lua_State* L);
@@ -88,8 +86,6 @@ namespace em
         static int lua_deleteTimeline(lua_State* L);
 
         static int lua_isEnabled(lua_State* L);
-
-        int m_Id;
     };
 
     class SceneObject

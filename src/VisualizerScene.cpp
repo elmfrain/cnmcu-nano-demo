@@ -143,6 +143,8 @@ void VisualizerScene::update(float dt)
 
     for(auto& object : objects)
         object.second->doUpdate(dt);
+
+    mainCamera->doUpdate(dt);
 }
 
 void VisualizerScene::draw()

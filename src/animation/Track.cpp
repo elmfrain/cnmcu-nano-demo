@@ -208,19 +208,21 @@ void Track::addKeyframe(Keyframe&& keyframe)
     }
 
     keyframesCount++;
-
-    sortKeyframes();
 }
 
 void Track::addKeyframe(float time, float value, Easing::Function easing)
 {
     addKeyframe({ time, value, easing });
+
+    sortKeyframes();
 }
 
 void Track::addKeyframes(std::vector<Keyframe>&& keyframes)
 {
     for (auto& keyframe : keyframes)
         addKeyframe(std::move(keyframe));
+
+    sortKeyframes();
 }
 
 float Track::getValue(float time) const

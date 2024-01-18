@@ -248,6 +248,9 @@ void Dynamics::update(float dt, SceneObject* parent)
     for(auto& smoother : smoothers)
         smoother.second.update(dt);
 
+    for(auto& timeline: timelines)
+        timeline.second.update(dt);
+
     if(!hasLuaInstance(L))
         return;
 

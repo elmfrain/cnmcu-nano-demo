@@ -332,6 +332,8 @@ int Timeline::lua_openTimelineLib(lua_State* L)
     return 1;
 }
 
+#include <iostream>
+
 int Timeline::lua_getValue(lua_State* L)
 {
     luaGetTrack();
@@ -551,15 +553,10 @@ int Timeline::lua_addTrack(lua_State* L)
 {
     luaGetTrack();
 
-    if(lua_isstring(L, 2))
+    const char* name = luaL_checkstring(L, 2);
+
+    if(lua_istable(L, 3))
     {
-        const char* name = lua_tostring(L, 2);
-        float value = static_cast<float>(luaL_checknumber(L, 3));
-        timeline->addTrack(name, value);
-    }
-    else if(lua_istable(L, 2))
-    {
-        const char* name = lua_tostring(L, 2);
         std::vector<Keyframe> keyframes;
         lua_pushnil(L);
         while(lua_next(L, 3) != 0)
@@ -570,14 +567,20 @@ int Timeline::lua_addTrack(lua_State* L)
             lua_pop(L, 1);
         }
         timeline->addTrack(name, std::move(keyframes));
+
+        return 0;
     }
-    else if(lua_isnumber(L, 2))
+    
+    if(lua_gettop(L) == 3)
+        timeline->addTrack(name, static_cast<float>(luaL_checknumber(L, 3)));
+    else if(lua_gettop(L) == 4)
+        timeline->addTrack(name, static_cast<float>(luaL_checknumber(L, 3)), static_cast<float>(luaL_checknumber(L, 4)));
+    else if(lua_gettop(L) == 5)
     {
-        const char* name = lua_tostring(L, 2);
         float startValue = static_cast<float>(luaL_checknumber(L, 3));
         float endValue = static_cast<float>(luaL_checknumber(L, 4));
-        Easing::Function easing = Easing::getEasingFunction(luaL_checkstring(L, 5));
-        timeline->addTrack(name, startValue, endValue, easing);
+        Easing::Function function = Easing::getEasingFunction(luaL_checkstring(L, 5));
+        timeline->addTrack(name, startValue, endValue, function);
     }
 
     return 0;

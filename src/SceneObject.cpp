@@ -388,24 +388,20 @@ const char* SceneObject::typeNames[] =
     "ROOT"
 };
 
-lua_State* SceneObject::L = nullptr;
-int SceneObject::m_nextId = 0;
-
 SceneObject::SceneObject(Type type, const std::string& name)
     : m_type(type)
     , m_parent(nullptr)
     , m_numChildren(0)
-    , m_Id(m_nextId++)
 {
     setName(name);
 
-    if(m_name != getRootName())
-        getObjects()[getRootName()]->addChild(*this);
+    if(m_name != rootObjName())
+        getObjects()[rootObjName()]->addChild(*this);
 }
 
 SceneObject::~SceneObject()
 {
-    if(m_name == getRootName())
+    if(m_name == rootObjName())
     {
         logger.warnf("The root object is being deleted. This should not happen.");
         return;
@@ -417,17 +413,11 @@ SceneObject::~SceneObject()
         m_parent->removeChild(*this);
 
     getObjects().erase(m_name);
-
-    lua_getglobal(L, "__SceneObjectInstances");
-    lua_pushinteger(L, m_Id);
-    lua_pushnil(L);
-    lua_settable(L, -3);
-    lua_pop(L, 1);
 }
 
 void SceneObject::doUpdate(float dt)
 {
-    if(m_name == getRootName())
+    if(m_name == rootObjName())
         return;
 
     if(m_dynamics.enabled)
@@ -460,7 +450,7 @@ const Transform& SceneObject::getConstTransform() const
 // appended with a number.
 void SceneObject::setName(const std::string& name)
 {
-    if(m_name == getRootName())
+    if(m_name == rootObjName())
         return;
 
     getObjects().erase(m_name);
@@ -493,7 +483,7 @@ const Dynamics& SceneObject::getConstDynamics() const
 // Removes all chidren and parents them to this object's parent
 void SceneObject::removeAllChildren()
 {
-    if(m_children.empty() || m_name == getRootName())
+    if(m_children.empty() || m_name == rootObjName())
         return;
 
     // Set all children's parent to this object's parent
@@ -516,7 +506,7 @@ void SceneObject::removeAllChildren()
 // parent
 void SceneObject::removeChild(SceneObject& child)
 {
-    if(m_name == getRootName())
+    if(m_name == rootObjName())
         return;
 
     // Set child's parent to this object's parent
@@ -562,7 +552,8 @@ void SceneObject::setDynamic(bool dynamic)
 
 int SceneObject::lua_this(lua_State* L)
 {
-    if(hasLuaInstance(m_Id)) return 1;
+    if(hasLuaInstance(L))
+        return 1;
 
     lua_newtable(L);
     lua_pushstring(L, "ptr");
@@ -578,7 +569,7 @@ int SceneObject::lua_this(lua_State* L)
     luaL_newmetatable(L, "SceneObject");
     lua_setmetatable(L, -2);
 
-    registerLuaInstance(m_Id);
+    luaRegisterInstance(L);
 
     return 1;
 }
@@ -598,9 +589,6 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
         {"setDynamic", lua_setDynamic},
         {nullptr, nullptr}
     };
-
-    SceneObject::L = L;
-
     Transform::lua_openTransformLib(L);
     Dynamics::lua_openDynamicsLib(L);
 
@@ -613,8 +601,7 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
 
     lua_setglobal(L, "SceneObject");
 
-    lua_newtable(L);
-    lua_setglobal(L, "__SceneObjectInstances");
+    LuaIndexable<SceneObject>::luaRegisterType(L);
 
     LightObject::lua_openLightObjectLib(L);
     MeshObject::lua_openMeshObjectLib(L);
@@ -713,28 +700,6 @@ int SceneObject::lua_setName(lua_State* L)
     return 0;
 }
 
-bool SceneObject::hasLuaInstance(int id)
-{
-    lua_getglobal(L, "__SceneObjectInstances");
-    lua_pushinteger(L, id);
-    lua_gettable(L, -2);
-    bool hasInstance = !lua_isnil(L, -1);
-    
-    if(hasInstance) lua_remove(L, -2);
-    else lua_pop(L, 2);
-
-    return hasInstance;
-}
-
-void SceneObject::registerLuaInstance(int id)
-{
-    lua_getglobal(L, "__SceneObjectInstances");
-    lua_pushinteger(L, id);
-    lua_pushvalue(L, -3);
-    lua_settable(L, -3);
-    lua_pop(L, 1);
-}
-
 std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()
 {
     static std::unordered_map<std::string, SceneObject*>* objects = nullptr;
@@ -743,7 +708,7 @@ std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()
     {
     public:
         Root()
-            : SceneObject(ROOT, getRootName())
+            : SceneObject(ROOT, rootObjName())
         {
         }
 
@@ -763,13 +728,13 @@ std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()
     if(!objects)
     {
         objects = new std::unordered_map<std::string, SceneObject*>();
-        (*objects)[getRootName()] = new Root();
+        (*objects)[rootObjName()] = new Root();
     }
 
     return *objects;
 }
 
-const char* SceneObject::getRootName()
+const char* SceneObject::rootObjName()
 {
     static const char* rootName = "Root";
     return rootName;

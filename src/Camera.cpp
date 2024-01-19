@@ -73,7 +73,8 @@ const glm::mat4 Camera::getViewProjectionMatrix() const
 
 int Camera::lua_this(lua_State* L)
 {
-    if(hasLuaInstance(m_Id)) return 1;
+    if(hasLuaInstance(L))
+        return 1;
 
     lua_newtable(L);
     lua_pushstring(L, "ptr");
@@ -89,7 +90,7 @@ int Camera::lua_this(lua_State* L)
     luaL_newmetatable(L, "Camera");
     lua_setmetatable(L, -2);
 
-    registerLuaInstance(m_Id);
+    luaRegisterInstance(L);
 
     return 1;
 }

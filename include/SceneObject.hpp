@@ -88,7 +88,7 @@ namespace em
         static int lua_isEnabled(lua_State* L);
     };
 
-    class SceneObject
+    class SceneObject : protected LuaIndexable<SceneObject>
     {
     public:
         enum Type
@@ -128,6 +128,8 @@ namespace em
         bool isDynamic() const;
         void setDynamic(bool dynamic);
 
+        static const char* rootObjName();
+
         virtual int lua_this(lua_State* L);
         static int lua_openSceneObjectLib(lua_State* L);
     private:
@@ -140,9 +142,6 @@ namespace em
         SceneObject* m_parent;
         int m_numChildren;
         std::forward_list<SceneObject*> m_children;
-
-        static int m_nextId;
-        static lua_State* L;
 
         static int lua_getName(lua_State* L);
         static int lua_getType(lua_State* L);
@@ -161,10 +160,9 @@ namespace em
 
         virtual void update(float dt) = 0;
 
-        static bool hasLuaInstance(int id);
-        static void registerLuaInstance(int id);
+        std::forward_list<SceneObject*> getChildren();
+
         static std::unordered_map<std::string, SceneObject*>& getObjects();
-        static const char* getRootName();
         static Logger logger;
     };
 }

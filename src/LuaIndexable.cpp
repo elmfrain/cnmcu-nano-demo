@@ -33,3 +33,9 @@ const char* LuaIndexable<em::Dynamics>::luaIndexTableName()
 {
     return "__DynamicsInstances";
 }
+
+template<>
+const char* LuaIndexable<em::SceneObject>::luaIndexTableName()
+{
+    return "__SceneObjectInstances";
+}

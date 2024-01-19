@@ -189,11 +189,12 @@ private:
     int m_Id;
     lua_State* L = nullptr;
 
+    static int nextId;
     static const char* luaIndexTableName(); // defined in LuaIndexable.cpp
 public:
     LuaIndexable()
     {
-        
+        m_Id = -1;
     }
 
     ~LuaIndexable()
@@ -250,6 +251,9 @@ public:
 
     int hasLuaInstance(lua_State* L)
     {
+        if(m_Id < 0)
+            return false;
+
         lua_getglobal(L, luaIndexTableName());
         lua_pushinteger(L, m_Id);
         lua_gettable(L, -2);
@@ -265,7 +269,6 @@ public:
 
     void luaRegisterInstance(lua_State* L)
     {
-        static int nextId = 0;
         m_Id = nextId++;
 
         lua_getglobal(L, luaIndexTableName());
@@ -277,3 +280,6 @@ public:
         this->L = L;
     }
 };
+
+template<typename T>
+int LuaIndexable<T>::nextId = 0;

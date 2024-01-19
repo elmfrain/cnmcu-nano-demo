@@ -19,8 +19,6 @@ void MeshObject::update(float dt)
 
 void MeshObject::draw(Shader& shader)
 {
-    shader.setModelViewMatrix(getConstTransform().getMatrix());
-
     if(!mesh) return;
 
     if(mesh->getTextureHandle() != 0)

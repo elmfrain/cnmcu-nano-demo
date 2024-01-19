@@ -156,21 +156,18 @@ void VisualizerScene::draw()
     phongShader.setProjectionMatrix(mainCamera->getViewProjectionMatrix());
     phongShader.setCameraPos(mainCamera->getTransform().position);
     phongShader.setLightCount(lights.size());
-    int i = 0;
-    for(auto it = lights.begin(); it != lights.end(); ++it)
-    {
-        if(i >= MAX_LIGHTS) break;
-        phongShader.getLight(i).position = it->second->getTransform().position;
-        phongShader.getLight(i++).setLight(it->second->getColor(), it->second->getIntensity());
-    }
+    lightIndex = 0;
 
     framebuffer.clear();
     phongShader.use();
 
+    for(auto& light : lights)
+        if(light.second->isTopLevel())
+            drawObject(light.second.get(), glm::mat4(1.0f));
+
     for(auto& object : objects)
-    {
-        object.second->draw(phongShader);
-    }
+        if(object.second->isTopLevel())
+            drawObject(object.second.get(), glm::mat4(1.0f));
 
     framebuffer.unbind();
 
@@ -210,6 +207,30 @@ LightObject& VisualizerScene::createLight(const std::string& name)
 LightObject& VisualizerScene::getLight(const std::string& name)
 {
     return static_cast<LightObject&>(lights[name].get()[0]);
+}
+
+void VisualizerScene::drawObject(SceneObject* object, glm::mat4 modelView)
+{
+    modelView *= object->getConstTransform().getMatrix();
+
+    if(object->getType() == SceneObject::MESH)
+    {
+        MeshObject* meshObject = static_cast<MeshObject*>(object);
+
+        phongShader.setModelViewMatrix(modelView);
+        meshObject->draw(phongShader);
+    }
+    else if(object->getType() == SceneObject::LIGHT && lightIndex < MAX_LIGHTS)
+    {
+        LightObject* lightObject = static_cast<LightObject*>(object);
+        glm::vec4 lightPos = modelView * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        phongShader.getLight(lightIndex).position = lightPos;
+        phongShader.getLight(lightIndex++).setLight(lightObject->getColor(), lightObject->getIntensity());
+    }
+
+    for(auto& child : object->getChildren())
+        drawObject(child, modelView);
 }
 
 void VisualizerScene::initLua()

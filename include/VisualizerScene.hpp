@@ -54,6 +54,9 @@ namespace em
         LightObject& createLight(const std::string& name);
         LightObject& getLight(const std::string& name);
 
+        int lightIndex;
+        void drawObject(SceneObject* object, glm::mat4 modelView);
+
         void initLua();
         void initFromLua();
         void updateFromLua(float dt);

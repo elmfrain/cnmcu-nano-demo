@@ -41,7 +41,7 @@ namespace em
         glm::mat4 m_projectionMatrix;
         glm::mat4 m_modelViewMatrix;
         glm::vec4 m_color;
-        GLuint m_textures[32];
+        GLuint m_textures[8];
         GLuint m_textureCount;
         int m_enabledTexture;
         bool m_vertexColorEnabled;

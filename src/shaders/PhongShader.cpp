@@ -258,7 +258,7 @@ const char* PhongShader::m_fragmentShaderSource =
     "in mediump vec4 color;\n"
     "in mediump vec3 fragPos;\n"
     "out mediump vec4 outColor;\n"
-    "uniform sampler2D u_textures[32];\n"
+    "uniform sampler2D u_textures[8];\n"
     "uniform int u_textureCount;\n"
     "uniform int u_enabledTexture;\n"
     "uniform mediump vec4 u_color;\n"

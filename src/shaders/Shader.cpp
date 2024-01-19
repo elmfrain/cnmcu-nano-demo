@@ -23,7 +23,7 @@ const char* Shader::basicFragmentShaderSource =
     "in vec2 uv;\n"
     "in vec4 color;\n"
     "out vec4 outColor;\n"
-    "uniform sampler2D u_textures[32];\n"
+    "uniform sampler2D u_textures[8];\n"
     "uniform int u_textureCount;\n"
     "uniform int u_enabledTexture;\n"
     "uniform vec4 u_color;\n"
@@ -239,7 +239,7 @@ void Shader::updateUniforms()
     glUniformMatrix4fv(m_projectionMatrixUniformLoc, 1, GL_FALSE, &m_projectionMatrix[0][0]);
     glUniformMatrix4fv(m_modelViewMatrixUniformLoc, 1, GL_FALSE, &m_modelViewMatrix[0][0]);
     glUniform4fv(m_colorUniformLoc, 1, &m_color[0]);
-    glUniform1iv(m_texturesUniformLoc, 32, (GLint*)m_textures);
+    glUniform1iv(m_texturesUniformLoc, 8, (GLint*)m_textures);
     glUniform1i(m_textureCountUniformLoc, m_textureCount);
     glUniform1i(m_enabledTextureUniformLoc, m_enabledTexture);
     glUniform1i(m_vertexColorEnabledUniformLoc, m_vertexColorEnabled);

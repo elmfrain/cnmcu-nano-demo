@@ -1,7 +1,17 @@
 #include <Visualizer.hpp>
 #include <Logger.hpp>
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 static em::Logger logger("Main");
+em::VisualizerApp application;
+
+static void runLoop()
+{
+    application.runLoop();
+}
 
 int main(int argc, char** argv)
 {
@@ -10,14 +20,13 @@ int main(int argc, char** argv)
     // options.width = 1280;
     // options.height = 720;
 
-    em::VisualizerApp application;
-
     if(!application.start(options))
     {
         logger.fatalf("Unable to start application!");
         return -1;
     }
 
+#ifndef EMSCRIPTEN
     while(!application.shouldClose())
     {
         if(!application.runLoop())
@@ -26,6 +35,9 @@ int main(int argc, char** argv)
             return -2;
         }
     }
+#else
+    emscripten_set_main_loop(runLoop, 0, true);
+#endif
 
     if(!application.terminate())
     {

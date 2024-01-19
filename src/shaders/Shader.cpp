@@ -82,9 +82,8 @@ void Shader::use()
         return;
     }
 
-    updateUniforms();
-
     glUseProgram(m_program);
+    updateUniforms();
 }
 
 void Shader::destroy()

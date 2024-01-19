@@ -153,6 +153,7 @@ int PhongMaterial::lua_setRoughness(lua_State* L)
     return 0;
 }
 
+#ifndef EMSCRIPTEN
 const char* PhongShader::m_vertexShaderSource =
     "#version 330 core\n"
     "layout(location = 0) in vec3 inPos;\n"
@@ -227,6 +228,82 @@ const char* PhongShader::m_fragmentShaderSource =
     "    if(u_vertexColorEnabled) outColor *= color;\n"
     "    if(u_enabledTexture >= 0) outColor *= texture(u_textures[u_enabledTexture], uv);\n"
     "}\n";
+#else
+const char* PhongShader::m_vertexShaderSource =
+    "#version 300 es\n"
+    "in mediump vec3 inPos;\n"
+    "in mediump vec2 inUV;\n"
+    "in mediump vec3 inNormal;\n"
+    "in mediump vec4 inColor;\n"
+    "out mediump vec2 uv;\n"
+    "out mediump vec4 color;\n"
+    "out mediump vec3 normal;\n"
+    "out mediump vec3 fragPos;\n"
+    "uniform mediump mat4 u_projectionMatrix;\n"
+    "uniform mediump mat4 u_viewMatrix;\n"
+    "uniform mediump mat4 u_modelViewMatrix;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = u_projectionMatrix * u_modelViewMatrix * vec4(inPos, 1);\n"
+    "    uv = inUV;\n"
+    "    color = inColor;\n"
+    "    normal = inNormal;\n"
+    "    fragPos = vec3(u_modelViewMatrix * vec4(inPos, 1.0));\n"
+    "}\n";
+
+const char* PhongShader::m_fragmentShaderSource =
+    "#version 300 es\n"
+    "in mediump vec2 uv;\n"
+    "in mediump vec3 normal;\n"
+    "in mediump vec4 color;\n"
+    "in mediump vec3 fragPos;\n"
+    "out mediump vec4 outColor;\n"
+    "uniform sampler2D u_textures[32];\n"
+    "uniform int u_textureCount;\n"
+    "uniform int u_enabledTexture;\n"
+    "uniform mediump vec4 u_color;\n"
+    "uniform bool u_vertexColorEnabled;\n"
+    "uniform mediump vec3 u_cameraPos;\n"
+    "struct Material\n"
+    "{\n"
+    "    mediump vec3 ambient;\n"
+    "    mediump vec3 diffuse;\n"
+    "    mediump vec3 specular;\n"
+    "    mediump float shininess;\n"
+    "};\n"
+    "uniform Material u_material;\n"
+    "struct Light\n"
+    "{\n"
+    "    mediump vec3 position;\n"
+    "    mediump vec3 emission;\n"
+    "};\n"
+    "uniform Light u_lights[8];\n"
+    "uniform int u_lightCount;\n"
+    "mediump vec3 calcLight(Light light, mediump vec3 viewDir)\n"
+    "{\n"
+    "    mediump float distance = length(light.position - fragPos);\n"
+    "    mediump vec3 lightDir = normalize(light.position - fragPos);\n"
+    "    mediump float diff = max(dot(normal, lightDir), 0.0);\n"
+    "    mediump vec3 reflectDir = reflect(-lightDir, normal);\n"
+    "    mediump float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_material.shininess);\n"
+    "    mediump vec3 ambient = light.emission * u_material.ambient;\n"
+    "    mediump vec3 diffuse = light.emission * diff * u_material.diffuse / (distance * distance + 1.0);\n"
+    "    mediump vec3 specular = light.emission * spec * u_material.specular;\n"
+    "    return (ambient + diffuse + specular);\n"
+    "}\n"
+    "void main()\n"
+    "{\n"
+    "    outColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
+    "    mediump vec3 viewDir = normalize(u_cameraPos - fragPos);\n"
+    "    for(int i = 0; i < u_lightCount; i++)\n"
+    "    {\n"
+    "        outColor += vec4(calcLight(u_lights[i], viewDir), 0.0);\n"
+    "    }\n"
+    "    outColor *= u_color;\n"
+    "    if(u_vertexColorEnabled) outColor *= color;\n"
+    "    if(u_enabledTexture >= 0) outColor *= texture(u_textures[0], uv);\n"
+    "}\n";
+#endif
 
 PhongShader::PhongShader() : Shader()
     , m_cameraPos(0.0f)

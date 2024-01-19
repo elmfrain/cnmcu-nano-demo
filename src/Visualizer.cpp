@@ -49,12 +49,14 @@ bool VisualizerApp::start(AppParams& options)
 
     glfwMakeContextCurrent(m_window);
 
+#ifndef EMSCRIPTEN
     // Initialize GLAD for OpenGL function loading
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         m_logger.fatalf("Unable to load OpenGL functions");
         return false;
     }
+#endif
 
     // Setup input
     m_input = std::make_unique<Input>(m_window);
@@ -101,7 +103,7 @@ bool VisualizerApp::runLoop()
     if(m_input->isKeyPressed(GLFW_KEY_F11))
         setFullscreen(!m_fullscreen);
 
-    if(m_input->isKeyPressed(GLFW_KEY_F5))
+    if(m_input->isKeyPressed(GLFW_KEY_R))
         m_scene.reload();
 
     return true;

@@ -138,6 +138,11 @@ void VisualizerScene::update(float dt)
     rotateCamera(*mainCamera, dt);
     updateFromLua(dt);
 
+    const Input& input = VisualizerApp::getInstance().getInput();
+
+    if(input.isKeyPressed(GLFW_KEY_R))
+        reload();
+        
     for(auto&lights : lights)
         lights.second->doUpdate(dt);
 

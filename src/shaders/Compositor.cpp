@@ -2,6 +2,7 @@
 
 using namespace em;
 
+#ifndef EMSCRIPTEN
 const char* Compositor::vertexShaderSource =
     "#version 330 core\n"
     "layout(location = 0) in vec3 inPos;\n"
@@ -41,6 +42,47 @@ const char* Compositor::fragmentShaderSource =
     "    color.rgb = pow(color.rgb, vec3(u_gamma));\n"
     "    outColor = color;\n"
     "}\n";
+#else
+const char* Compositor::vertexShaderSource =
+    "#version 300 es\n"
+    "in vec3 inPos;\n"
+    "in vec2 inUV;\n"
+    "out vec2 uv;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = vec4(inPos, 1);\n"
+    "    uv = inUV;\n"
+    "}\n";
+
+const char* Compositor::fragmentShaderSource =
+    "#version 300 es\n"
+    "in mediump vec2 uv;\n"
+    "out mediump vec4 outColor;\n"
+    "uniform sampler2D u_texture;\n"
+    "uniform mediump float u_gamma;\n"
+    "uniform mediump float u_exposure;\n"
+    "uniform mediump float u_width;\n"
+    "uniform mediump float u_height;\n"
+    "mediump vec3 acesTonemap(mediump vec3 x)\n"
+    "{\n"
+    "    mediump float a = 2.51f;\n"
+    "    mediump float b = 0.03f;\n"
+    "    mediump float c = 2.43f;\n"
+    "    mediump float d = 0.59f;\n"
+    "    mediump float e = 0.14f;\n"
+    "    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);\n"
+    "}\n"
+    "void main()\n"
+    "{\n"
+    "    mediump vec4 color = texture(u_texture, uv);\n"
+    "    color.rgb = color.rgb * u_exposure;\n"
+    "    mediump float grayscale = dot(color.rgb, vec3(0.21, 0.72, 0.07));\n" // Convert to grayscale (color desaturation)
+    "    color.rgb += grayscale * grayscale;\n" // Mix with grayscale (color desaturation from luminance)
+    "    color.rgb = acesTonemap(color.rgb);\n" // Apply ACES tonemapping
+    "    color.rgb = pow(color.rgb, vec3(u_gamma));\n"
+    "    outColor = color;\n"
+    "}\n";
+#endif
 
 Logger Compositor::m_logger("Compositor");
 

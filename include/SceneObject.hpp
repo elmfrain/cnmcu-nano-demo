@@ -120,6 +120,7 @@ namespace em
         Dynamics& getDynamics();
         const Dynamics& getConstDynamics() const;
 
+        std::forward_list<SceneObject*>& getChildren();
         void removeAllChildren();
         void removeChild(SceneObject& child);
         void addChild(SceneObject& child);
@@ -161,8 +162,6 @@ namespace em
         int m_Id;
 
         virtual void update(float dt) = 0;
-
-        std::forward_list<SceneObject*>& getChildren();
 
         static std::unordered_map<std::string, SceneObject*>& getObjects();
         static Logger logger;

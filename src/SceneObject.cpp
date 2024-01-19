@@ -480,6 +480,11 @@ const Dynamics& SceneObject::getConstDynamics() const
     return m_dynamics;
 }
 
+std::forward_list<SceneObject*>& SceneObject::getChildren()
+{
+    return m_children;
+}
+
 // Removes all chidren and parents them to this object's parent
 void SceneObject::removeAllChildren()
 {
@@ -712,11 +717,6 @@ int SceneObject::lua_setName(lua_State* L)
     object->setName(name);
 
     return 0;
-}
-
-std::forward_list<SceneObject*>& SceneObject::getChildren()
-{
-    return m_children;
 }
 
 std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()

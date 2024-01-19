@@ -140,7 +140,7 @@ void VisualizerScene::update(float dt)
 
     const Input& input = VisualizerApp::getInstance().getInput();
 
-    if(input.isKeyPressed(GLFW_KEY_R))
+    if(input.isKeyPressed(GLFW_KEY_R) || input.isMousePressed(GLFW_MOUSE_BUTTON_1))
         reload();
         
     for(auto&lights : lights)

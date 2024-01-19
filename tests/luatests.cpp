@@ -735,6 +735,10 @@ TEST(LuaScripting, SceneObject)
     ASSERT_EQ(luaAssert(L, "o:getName() == \"TestObject\""), 0) << luaGetError("SceneObject::getName() failed");
     ASSERT_EQ(luaAssert(L, "o:getChildCount() == 2"), 0) << luaGetError("SceneObject::getChildCount() failed");
 
+    ASSERT_EQ(luaAssert(L, "o:isTopLevel() == true"), 0) << luaGetError("SceneObject::isTopLevel() failed");
+    ASSERT_EQ(luaAssert(L, "c1:isTopLevel() == false"), 0) << luaGetError("SceneObject::isTopLevel() failed");
+    ASSERT_EQ(luaAssert(L, "c2:isTopLevel() == false"), 0) << luaGetError("SceneObject::isTopLevel() failed");
+
     ASSERT_EQ(luaAssert(L, "o == o2"), 0) << luaGetError("SceneObject::operator==() failed");
     ASSERT_EQ(luaAssert(L, "o == o3"), 0) << luaGetError("SceneObject::operator==() failed");
     ASSERT_EQ(luaAssert(L, "o ~= c1"), 0) << luaGetError("SceneObject::operator==() failed");

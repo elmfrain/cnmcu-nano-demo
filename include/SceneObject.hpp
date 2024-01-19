@@ -124,6 +124,7 @@ namespace em
         void removeChild(SceneObject& child);
         void addChild(SceneObject& child);
         int getChildCount() const;
+        bool isTopLevel() const;
 
         bool isDynamic() const;
         void setDynamic(bool dynamic);
@@ -146,6 +147,7 @@ namespace em
         static int lua_getName(lua_State* L);
         static int lua_getType(lua_State* L);
         static int lua_getChildCount(lua_State* L);
+        static int lua_isTopLevel(lua_State* L);
 
         static int lua_removeAllChildren(lua_State* L);
         static int lua_removeChild(lua_State* L);

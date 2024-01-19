@@ -540,6 +540,11 @@ int SceneObject::getChildCount() const
     return m_numChildren;
 }
 
+bool SceneObject::isTopLevel() const
+{
+    return m_parent->m_type == ROOT;
+}
+
 bool SceneObject::isDynamic() const
 {
     return m_dynamics.enabled;
@@ -581,6 +586,7 @@ int SceneObject::lua_openSceneObjectLib(lua_State* L)
         {"getName", lua_getName},
         {"getType", lua_getType},
         {"getChildCount", lua_getChildCount},
+        {"isTopLevel", lua_isTopLevel},
         {"setName", lua_setName},
         {"removeAllChildren", lua_removeAllChildren},
         {"removeChild", lua_removeChild},
@@ -635,6 +641,14 @@ int SceneObject::lua_getChildCount(lua_State* L)
 {
     luaGetSceneObject();
     lua_pushinteger(L, object->getChildCount());
+
+    return 1;
+}
+
+int SceneObject::lua_isTopLevel(lua_State* L)
+{
+    luaGetSceneObject();
+    lua_pushboolean(L, object->isTopLevel());
 
     return 1;
 }

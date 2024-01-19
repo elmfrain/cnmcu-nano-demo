@@ -714,6 +714,11 @@ int SceneObject::lua_setName(lua_State* L)
     return 0;
 }
 
+std::forward_list<SceneObject*>& SceneObject::getChildren()
+{
+    return m_children;
+}
+
 std::unordered_map<std::string, SceneObject*>& SceneObject::getObjects()
 {
     static std::unordered_map<std::string, SceneObject*>* objects = nullptr;

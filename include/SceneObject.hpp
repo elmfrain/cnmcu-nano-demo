@@ -162,7 +162,7 @@ namespace em
 
         virtual void update(float dt) = 0;
 
-        std::forward_list<SceneObject*> getChildren();
+        std::forward_list<SceneObject*>& getChildren();
 
         static std::unordered_map<std::string, SceneObject*>& getObjects();
         static Logger logger;

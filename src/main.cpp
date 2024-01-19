@@ -17,9 +17,9 @@ int main(int argc, char** argv)
 {
     em::AppParams options;
 
-    // options.width = 1280;
-    // options.height = 720;
-
+    options.width = 720;
+    options.height = 720;
+    
     if(!application.start(options))
     {
         logger.fatalf("Unable to start application!");

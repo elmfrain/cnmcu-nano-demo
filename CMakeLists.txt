@@ -4,10 +4,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(sare-init-visulizer)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
+
 add_subdirectory("dep/glm")
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL " " FORCE)
-set(ASSIMP_BUILD_OBJ_IMPORTER ON  CACHE BOOL " " FORCE)
-set(ASSIMP_BUILD_PLY_IMPORTER ON  CACHE BOOL " " FORCE)
+set(ASSIMP_BUILD_OBJ_IMPORTER ON  CACHE BOOL " " FORCE) #Only enable obj importer
 set(ASSIMP_NO_EXPORT          ON  CACHE BOOL " " FORCE)
 set(ASSIMP_BUILD_TESTS        OFF CACHE BOOL " " FORCE)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL " " FORCE)
@@ -15,11 +18,11 @@ set(ASSIMP_INSTALL            OFF CACHE BOOL " " FORCE)
 set(BUILD_SHARED_LIBS         OFF CACHE BOOL " " FORCE)
 add_subdirectory("dep/assimp")
 add_subdirectory("dep/lua")
-add_subdirectory("dep/googletest")
 
 if(NOT EMSCRIPTEN)
-add_subdirectory("dep/glfw")
+  add_subdirectory("dep/glfw")
   add_subdirectory("dep/glad")
+  add_subdirectory("dep/googletest")
 endif()
 
 set(PROJECT_SOURCES
@@ -93,6 +96,7 @@ add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
   COMMENT "Copying resources to build directory"
 )
 
+if(NOT EMSCRIPTEN)
 enable_testing()
 
 set(TESTER ${PROJECT_NAME}-test)
@@ -123,3 +127,4 @@ add_custom_command(TARGET ${TESTER} POST_BUILD
   ${CMAKE_CURRENT_BINARY_DIR}/res
   COMMENT "Copying resources to build directory"
 )
+endif()

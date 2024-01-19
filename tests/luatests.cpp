@@ -233,11 +233,18 @@ TEST(LuaScripting, LuaInclude)
 
     {
     DummyIndexable dummyIndexable;
+    DummyIndexable di;
+    DummyIndexable di2;
 
     dummyIndexable.lua_this(L);
     lua_setglobal(L, "dummyIndexable");
     dummyIndexable.lua_this(L);
     lua_setglobal(L, "dummyIndexable2");
+    di.lua_this(L);
+    lua_setglobal(L, "di");
+    di2.lua_this(L);
+    lua_setglobal(L, "di2");
+
 
     lua_getglobal(L, "__DummyIndexableInstances");
     lua_pushinteger(L, 0);
@@ -248,6 +255,8 @@ TEST(LuaScripting, LuaInclude)
     ASSERT_EQ(luaRun(L, "assert(getmetatable(dummyIndexable).__name == 'DummyIndexable')"), 0) << luaGetError("DummyIndexable metatable name assertion failed");
 
     ASSERT_EQ(luaAssert(L, "dummyIndexable == dummyIndexable2"), 0) << luaGetError("DummyIndexable::operator==() failed");
+    ASSERT_EQ(luaAssert(L, "dummyIndexable ~= di"), 0) << luaGetError("DummyIndexable::operator==() failed");
+    ASSERT_EQ(luaAssert(L, "di ~= di2"), 0) << luaGetError("DummyIndexable::operator==() failed");
 
     ASSERT_EQ(luaRun(L, "dummyIndexable:setValue(10)"), 0) << luaGetError("DummyIndexable::setValue() failed");
     ASSERT_EQ(dummyIndexable.m_value, 10) << "DummyIndexable::setValue() failed";

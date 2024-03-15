@@ -2,12 +2,10 @@ cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
-project(sare-init-visulizer)
+project(cnmcu-interactive)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
-
+add_subdirectory("dep/glfw")
+add_subdirectory("dep/glad")
 add_subdirectory("dep/glm")
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL " " FORCE)
 set(ASSIMP_BUILD_OBJ_IMPORTER ON  CACHE BOOL " " FORCE) #Only enable obj importer
@@ -22,8 +20,7 @@ add_subdirectory("dep/lua")
 if(NOT EMSCRIPTEN)
   add_subdirectory("dep/glfw")
   add_subdirectory("dep/glad")
-  add_subdirectory("dep/googletest")
-endif()
+  endif()
 
 set(PROJECT_SOURCES
   src/main.cpp
@@ -95,36 +92,3 @@ add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
   ${CMAKE_CURRENT_BINARY_DIR}/res
   COMMENT "Copying resources to build directory"
 )
-
-if(NOT EMSCRIPTEN)
-enable_testing()
-
-set(TESTER ${PROJECT_NAME}-test)
-
-list(REMOVE_ITEM PROJECT_SOURCES src/main.cpp)
-
-add_executable(${TESTER}
-  ${PROJECT_SOURCES}
-
-  tests/test.cpp
-  tests/luatests.cpp
-  tests/animationtests.cpp
-)
-
-target_include_directories(${TESTER} PRIVATE ${PROJECT_INCLUDES})
-
-target_link_libraries(${TESTER}
-  ${PROJECT_LIBRARIES}
-
-  gtest
-)
-
-add_test(NAME ${TESTER} COMMAND ${TESTER})
-
-add_custom_command(TARGET ${TESTER} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/res
-  ${CMAKE_CURRENT_BINARY_DIR}/res
-  COMMENT "Copying resources to build directory"
-)
-endif()

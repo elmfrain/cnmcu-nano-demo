@@ -4,4 +4,6 @@ imgui.ini
 rom.bin
 window-options.ini
 
+toolchain/*
+
 *.blend1

@@ -92,8 +92,8 @@ If you wish to use a different assembler, you can change the `compile_command` i
 
 `res/program.s` should be set as the input file for your assembler.
 Then the output flag should be set at the end of the command, for example:
-```bash
-vasm6502_oldstyle -Fbin -dotdir -wdc02 res/program.s -o
+```
+vasm6502_oldstyle -Fbin -dotdir -wdc02 res/program.s -o <the app fills this in>
 ```
 because the application expects `rom.bin` to be the output file.
 

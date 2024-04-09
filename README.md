@@ -1,12 +1,13 @@
 # CodeNode Nano Demo
-A proof-of-conecpt application the emulates a 6502 based microcontroller for use in Minecraft. You are able to program the MCU in assembly and run the code in real-time with the help of vasm, a 6502 assembler. The MCU is able to interact with four redstone wires and handle interrupts.
+A proof-of-conecpt application the emulates a 6502 based microcontroller for use in Minecraft. You are able to program the MCU in assembly and run the code in real-time with the help of [vasm](http://sun.hasenbraten.de/vasm/), a 6502 assembler. The MCU is able to interact with four redstone wires and handle interrupts.
 
 ![Screencapture](./screenshots/Screenshot%20from%202024-04-09%2002-17-05.png)
 
 ## Table of Contents
 * [Features](#features)
 * [MCU Documentation (How to use)](#mcu-documentation-how-to-use)
-* [References](#references)
+* [How to build](#how-to-build)
+* [How to run](#how-to-run)
 * [Libraries Used](#libraries-used)
 * [Misc](#misc)
 
@@ -26,7 +27,63 @@ A proof-of-conecpt application the emulates a 6502 based microcontroller for use
 
 ![Screenshot](./screenshots/Screenshot%20from%202024-04-09%2002-17-52.png)
 
-Just click on `Help` in the `CodeNode Nano Demo` window, and click `Documentation`.
+Goto `CodeNode Nano Demo` > `Help` > `Documentation`.
+
+## How to build
+This works for most operating systems, but you need to have CMake installed.
+
+First, clone the repository recursively:
+```bash
+git clone https://github.com/elmfrain/cnmcu-nano-demo.git --recursive
+```
+
+Create a build directory
+```bash
+mkdir build && cd build
+```
+
+Run CMake
+```bash
+cmake ..
+```
+
+Build the project
+```bash
+make cnmcu-nano-demo
+```
+
+On Windows, you can use Visual Studio to build the project. Open the project in the `build` directory and build the `cnmcu-nano-demo` target.
+
+## How to run
+Before running the application, you must download and/or build the vasm assembler. Some prebuilt binaries are avaiable [here](http://www.compilers.de/vasm.html), but you may need to build them yourself on ther platforms.
+
+You must put `vasm6502_oldstyle` and `vobjdump` (and `cywin.dll` for Windows) binaries in the `toolchain` folder.
+
+```
+/ cnmcu-nano-demo
+  / toolchain
+    / vasm6502_oldstyle
+    / vobjdump
+    / cywin.dll
+```
+
+ If you've built the project yourself, chances are that you need to be in the `build` directory, the structure should look like this:
+
+```
+/ cnmcu-nano-demo
+  / build
+    / toolchain
+      / vasm6502_oldstyle
+      / vobjdump
+      / cywin.dll
+```
+
+The application will use these binaries to assemble the code.
+
+Then run the application:
+```bash
+./cnmcu-nano-demo
+```
 
 ## Libraries Used
 * [GLFW](https://www.glfw.org/) - Windowing and input handling.

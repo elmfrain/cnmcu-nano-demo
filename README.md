@@ -55,7 +55,7 @@ make cnmcu-nano-demo
 On Windows, you can use Visual Studio to build the project. Open the project in the `build` directory and build the `cnmcu-nano-demo` target.
 
 ## How to run
-Before running the application, you must download and/or build the vasm assembler. Some prebuilt binaries are avaiable [here](http://www.compilers.de/vasm.html), but you may need to build them yourself on ther platforms.
+Before running the application, you must download and/or build the vasm assembler. Some prebuilt binaries are avaiable [here](http://www.compilers.de/vasm.html), but you may need to build them yourself on some platforms.
 
 You must put `vasm6502_oldstyle` and `vobjdump` (and `cywin.dll` for Windows) binaries in the `toolchain` folder.
 
@@ -84,6 +84,19 @@ Then run the application:
 ```bash
 ./cnmcu-nano-demo
 ```
+
+### Use different toolchain (assembler)
+If you wish to use a different assembler, you can change the `compile_command` in the textbox besides the `Upload` button.
+
+![Screenshot](./screenshots/Screenshot%20from%202024-04-09%2017-58-44.png)
+
+`res/program.s` should be set as the input file for your assembler.
+Then the output flag should be set at the end of the command, for example:
+```bash
+vasm6502_oldstyle -Fbin -dotdir -wdc02 res/program.s -o
+```
+because the application expects `rom.bin` to be the output file.
+
 
 ## Libraries Used
 * [GLFW](https://www.glfw.org/) - Windowing and input handling.

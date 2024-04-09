@@ -8,3 +8,9 @@
 [submodule "dep/assimp"]
 	path = dep/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "dep/imgui"]
+	path = dep/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "dep/ImGuiColorTextEdit"]
+	path = dep/ImGuiColorTextEdit
+	url = https://github.com/BalazsJako/ImGuiColorTextEdit.git

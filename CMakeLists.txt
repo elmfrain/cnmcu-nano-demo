@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
-project(cnmcu-interactive)
+project(cnmcu-nano-demo)
 
 add_subdirectory("dep/glm")
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL " " FORCE)

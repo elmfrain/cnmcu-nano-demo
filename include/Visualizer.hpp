@@ -6,9 +6,12 @@
 #include <Input.hpp>
 #include <glm/glm.hpp>
 #include <VisualizerScene.hpp>
+#include <TextEditor.h>
 
 #include <memory>
 #include <inttypes.h>
+
+#include "MCUContext.hpp"
 
 namespace em {
     struct AppParams
@@ -52,7 +55,17 @@ namespace em {
         double m_lastFrameTime;
         glm::ivec2 m_windowSize;
 
+        MCUContext& m_mcuContext;
+        TextEditor m_textEditor;
+
         VisualizerScene m_scene;
+
+        void genUI();
+        void genTextEditor();
+        void genCPUStatus();
+        void genGPIOStatus();
+        void genZeroPageView();
+        void genDocumenation();
 
         static void onWindowResize(GLFWwindow* window, int width, int height);
     };

@@ -4,8 +4,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(cnmcu-interactive)
 
-add_subdirectory("dep/glfw")
-add_subdirectory("dep/glad")
 add_subdirectory("dep/glm")
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF CACHE BOOL " " FORCE)
 set(ASSIMP_BUILD_OBJ_IMPORTER ON  CACHE BOOL " " FORCE) #Only enable obj importer
@@ -16,11 +14,12 @@ set(ASSIMP_INSTALL            OFF CACHE BOOL " " FORCE)
 set(BUILD_SHARED_LIBS         OFF CACHE BOOL " " FORCE)
 add_subdirectory("dep/assimp")
 add_subdirectory("dep/lua")
+add_subdirectory("dep")
 
 if(NOT EMSCRIPTEN)
   add_subdirectory("dep/glfw")
   add_subdirectory("dep/glad")
-  endif()
+endif()
 
 set(PROJECT_SOURCES
   src/main.cpp
@@ -37,6 +36,8 @@ set(PROJECT_SOURCES
   src/LightObject.cpp
   src/Framebuffer.cpp
   src/LuaIndexable.cpp
+  src/CodeNodeNano.cpp
+  src/mos6502.cpp
 
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp
@@ -53,6 +54,8 @@ set(PROJECT_INCLUDES
   dep/glfw/include
   dep/glad/include
   dep/glm
+  dep/imgui
+  dep/imgui/backends
 )
 
 set(PROJECT_LIBRARIES
@@ -61,6 +64,7 @@ set(PROJECT_LIBRARIES
   glm
   assimp
   lua
+  imgui
 )
 
 if(EMSCRIPTEN)

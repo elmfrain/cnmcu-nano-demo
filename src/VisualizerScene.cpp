@@ -4,7 +4,7 @@
 #include <MeshBuilder.hpp>
 #include <Visualizer.hpp>
 #include <MeshObject.hpp>
-// #include <iostream>
+#include <imgui.h>
 
 using namespace em;
 
@@ -113,7 +113,7 @@ void VisualizerScene::init()
     initLua();
     initFromLua();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
@@ -134,14 +134,16 @@ void VisualizerScene::reload()
 
 void VisualizerScene::update(float dt)
 {
-    moveCamera(*mainCamera, dt);
-    rotateCamera(*mainCamera, dt);
-    updateFromLua(dt);
+    if (!ImGui::GetIO().WantCaptureKeyboard) {
+        moveCamera(*mainCamera, dt);
+        rotateCamera(*mainCamera, dt);
+        updateFromLua(dt);
 
-    const Input& input = VisualizerApp::getInstance().getInput();
+        const Input& input = VisualizerApp::getInstance().getInput();
 
-    if(input.isKeyPressed(GLFW_KEY_R) || input.isMousePressed(GLFW_MOUSE_BUTTON_1))
-        reload();
+        if(input.isKeyPressed(GLFW_KEY_R))
+            reload();
+    }
         
     for(auto&lights : lights)
         lights.second->doUpdate(dt);
@@ -221,6 +223,18 @@ void VisualizerScene::drawObject(SceneObject* object, glm::mat4 modelView)
     if(object->getType() == SceneObject::MESH)
     {
         MeshObject* meshObject = static_cast<MeshObject*>(object);
+
+        MCUContext& mcu = MCUContext::getInstance();
+        const glm::vec4 fullAlpha = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        if(meshObject->getName().compare("northDust") == 0)
+            meshObject->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * (mcu.northPower() * 0.0625f + 0.25f) + fullAlpha);
+        else if(meshObject->getName().compare("southDust") == 0)
+            meshObject->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * (mcu.southPower() * 0.0625f + 0.25f) + fullAlpha);
+        else if(meshObject->getName().compare("eastDust") == 0)
+            meshObject->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * (mcu.eastPower() * 0.0625f + 0.25f) + fullAlpha);
+        else if(meshObject->getName().compare("westDust") == 0)
+            meshObject->setColor(glm::vec4(1.0f, 0.0f, 0.0f, 0.0f) * (mcu.westPower() * 0.0625f + 0.25f) + fullAlpha);
+        
 
         phongShader.setModelViewMatrix(modelView);
         meshObject->draw(phongShader);

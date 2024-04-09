@@ -1,4 +1,7 @@
 build
 .vscode
+imgui.ini
+rom.bin
+window-options.ini
 
 *.blend1

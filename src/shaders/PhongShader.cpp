@@ -218,6 +218,9 @@ const char* PhongShader::m_fragmentShaderSource =
     "}\n"
     "void main()\n"
     "{\n"
+    "    vec4 textureColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+    "    if(u_enabledTexture >= 0) textureColor = texture(u_textures[u_enabledTexture], uv);\n"
+    "    if(textureColor.a < 0.1) discard;\n"
     "    outColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
     "    vec3 viewDir = normalize(u_cameraPos - fragPos);\n"
     "    for(int i = 0; i < u_lightCount; i++)\n"
@@ -226,7 +229,7 @@ const char* PhongShader::m_fragmentShaderSource =
     "    }\n"
     "    outColor *= u_color;\n"
     "    if(u_vertexColorEnabled) outColor *= color;\n"
-    "    if(u_enabledTexture >= 0) outColor *= texture(u_textures[u_enabledTexture], uv);\n"
+    "    if(u_enabledTexture >= 0) outColor *= textureColor;\n"
     "}\n";
 #else
 const char* PhongShader::m_vertexShaderSource =

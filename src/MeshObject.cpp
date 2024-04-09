@@ -5,7 +5,8 @@ using namespace em;
 #include <cstring>
 
 MeshObject::MeshObject(const std::string& name)
-    : SceneObject(MESH, name)
+    : SceneObject(MESH, name),
+    color(1.0f, 1.0f, 1.0f, 1.0f)
 {
 }
 
@@ -36,6 +37,7 @@ void MeshObject::draw(Shader& shader)
         phongShader.setMaterial(material);
     }
     
+    shader.setColor(color);
     shader.use();
     mesh->render(GL_TRIANGLES);
     
@@ -59,6 +61,16 @@ void MeshObject::setMaterial(const PhongMaterial& material)
 PhongMaterial MeshObject::getMaterial() const
 {
     return material;
+}
+
+void MeshObject::setColor(const glm::vec4& color)
+{
+    this->color = color;
+}
+
+glm::vec4 MeshObject::getColor() const
+{
+    return color;
 }
 
 #define luaGetMeshObject() \
@@ -98,6 +110,8 @@ int MeshObject::lua_openMeshObjectLib(lua_State* L)
     static const luaL_Reg luaMeshObjectMethods[] = {
         { "getMesh", lua_getMesh },
         { "setMesh", lua_setMesh },
+        { "getColor", lua_getColor },
+        { "setColor", lua_setColor },
         { nullptr, nullptr }
     };
 
@@ -130,6 +144,24 @@ int MeshObject::lua_setMesh(lua_State* L)
 {
     luaGetMeshObject();
     luaGetSharedPtr<Mesh>(L, meshObject->mesh, "MeshPtr", 2);
+
+    return 0;
+}
+
+int MeshObject::lua_getColor(lua_State* L)
+{
+    luaGetMeshObject();
+    luaPushVec4(meshObject->color);
+
+    return 1;
+}
+
+int MeshObject::lua_setColor(lua_State* L)
+{
+    luaGetMeshObject();
+    glm::vec4 color;
+    luaGetVec4(color, 2);
+    meshObject->color = color;
 
     return 0;
 }

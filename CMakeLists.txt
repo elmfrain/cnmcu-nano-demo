@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -38,6 +38,7 @@ set(PROJECT_SOURCES
   src/LuaIndexable.cpp
   src/CodeNodeNano.cpp
   src/mos6502.cpp
+  src/MCUContext.cpp
 
   src/shaders/Shader.cpp
   src/shaders/PhongShader.cpp

@@ -29,7 +29,6 @@ VisualizerApp::VisualizerApp() :
 bool VisualizerApp::start(AppParams& options)
 {
     m_params = options;
-
     if(!glfwInit())
     {
         m_logger.fatalf("Unable to initialize GLFW");
@@ -37,8 +36,13 @@ bool VisualizerApp::start(AppParams& options)
     }
 
     // Setup Glfw window
-    glfwWindowHint(GLFW_SAMPLES, options.msaaSamples);
-    glfwWindowHint(GLFW_RESIZABLE, options.resizable);
+    glfwDefaultWindowHints();
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
     m_window = glfwCreateWindow(options.width, options.height, "CodeNode Nano Demo", nullptr, nullptr);
     m_windowSize = glm::ivec2(options.width, options.height);
@@ -65,6 +69,8 @@ bool VisualizerApp::start(AppParams& options)
     }
 #endif
 
+    m_logger.infof("OpenGL Version: %s", glGetString(GL_VERSION));
+
     // Setup input
     m_input = std::make_unique<Input>(m_window);
 
@@ -82,7 +88,7 @@ bool VisualizerApp::start(AppParams& options)
     ImGuiIO& io = ImGui::GetIO(); (void) io;
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(m_window, true);
-    ImGui_ImplOpenGL3_Init("#version 130");
+    ImGui_ImplOpenGL3_Init("#version 330 core");
     m_textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::CPlusPlus());
     m_textEditor.SetText(MCUContext::loadCode("res/program.s"));
 

@@ -6,7 +6,6 @@
 #include <imgui_stdlib.h>
 #include <imgui_memory_editor.h>
 
-#define MCU_CONTEXT_IMPL
 #include "MCUContext.hpp"
 
 using namespace em;

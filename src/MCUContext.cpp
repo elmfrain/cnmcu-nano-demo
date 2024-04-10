@@ -39,7 +39,7 @@ void MCUContext::update(float dt)
 
     if(time - lastTickTime >= 1.0 / GAME_TICK_RATE)
     {
-        if(shouldUpload)
+        if(shouldUpload && !compiling)
         {
             uploadToMCU();
             shouldUpload = false;

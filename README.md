@@ -8,6 +8,8 @@ A proof-of-conecpt application the emulates a 6502 based microcontroller for use
 * [MCU Documentation (How to use)](#mcu-documentation-how-to-use)
 * [How to build](#how-to-build)
 * [How to run](#how-to-run)
+    * [Use different toolchain (assembler)](#use-different-toolchain-assembler)
+* [Downloads](#downloads)
 * [Libraries Used](#libraries-used)
 * [Misc](#misc)
 
@@ -97,6 +99,9 @@ vasm6502_oldstyle -Fbin -dotdir -wdc02 res/program.s -o <the app fills this in>
 ```
 because the application expects `rom.bin` to be the output file.
 
+
+## Downloads
+Prebuilt binaries for Windows, Linux, and MacOS x86_64 systems can be found in the [releases](https://github.com/elmfrain/cnmcu-nano-demo/releases) section.
 
 ## Libraries Used
 * [GLFW](https://www.glfw.org/) - Windowing and input handling.

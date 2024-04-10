@@ -8,10 +8,16 @@
 
 #include "MCUContext.hpp"
 
+#ifndef _WIN32
+#define COMPILE_COMMAND_FILE "res/compile_command.ini"
+#else
+#define COMPILE_COMMAND_FILE "res/windows_compile_command.ini"
+#endif
+
 using namespace em;
 
 static VisualizerApp* instance = nullptr;
-static std::string compileCommand = MCUContext::loadCompileCommand("res/compile_command.ini");
+static std::string compileCommand = MCUContext::loadCompileCommand(COMPILE_COMMAND_FILE);
 
 VisualizerApp::VisualizerApp() :
     m_logger("CNMCU Nano Demo App"),
@@ -553,7 +559,7 @@ void VisualizerApp::genTextEditor()
     ImGui::SameLine();
     if(ImGui::InputText("##", &compileCommand))
     {
-        MCUContext::saveCompileCommand("res/compile_command.ini", compileCommand);
+        MCUContext::saveCompileCommand(COMPILE_COMMAND_FILE, compileCommand);
         m_mcuContext.setCompileCommand(compileCommand.c_str());
     }
     ImGui::EndDisabled();

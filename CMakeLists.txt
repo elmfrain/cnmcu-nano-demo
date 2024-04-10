@@ -90,9 +90,18 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDES})
 
 target_link_libraries(${PROJECT_NAME} ${PROJECT_LIBRARIES})
 
-add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}/res
-  ${CMAKE_CURRENT_BINARY_DIR}/res
-  COMMENT "Copying resources to build directory"
-)
+if(NOT (${CMAKE_CURRENT_BINARY_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR}))
+  add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/res
+    ${CMAKE_CURRENT_BINARY_DIR}/res
+    COMMENT "Copying resources to build directory"
+  )
+
+  add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/toolchain
+    ${CMAKE_CURRENT_BINARY_DIR}/toolchain
+    COMMENT "Copying toolchain to build directory"
+  )
+endif()

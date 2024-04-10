@@ -3,6 +3,7 @@ build
 imgui.ini
 rom.bin
 window-options.ini
+.DS_Store
 
 toolchain/*
 

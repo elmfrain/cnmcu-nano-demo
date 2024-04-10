@@ -9,7 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd /home/fern/Documents/production/code-node-6502/src/main/resources/assets/cnmcu/textures/block/code_node_nano_pcb.png
+map_Kd code_node_nano_pcb.png
 
 newmtl Material.001
 Ns 273.243774
@@ -19,7 +19,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd /home/fern/Documents/production/code-node-6502/src/main/resources/assets/cnmcu/textures/block/code_node_nano_smd.png
+map_Kd code_node_nano_smd.png
 
 newmtl redstone
 Ns 250.000000
@@ -28,5 +28,5 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 illum 2
-map_Kd /home/fern/Documents/Blender/redstone_dust_line0.png
-map_d /home/fern/Documents/Blender/redstone_dust_line0.png
+map_Kd redstone_dust_line0.png
+map_d redstone_dust_line0.png
